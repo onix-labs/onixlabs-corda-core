@@ -1,0 +1,4 @@
+rootProject.name = 'onixlabs-corda-core'
+include 'onixlabs-corda-core-contract'
+include 'onixlabs-corda-core-workflow'
+include 'onixlabs-corda-core-integration'

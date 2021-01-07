@@ -1,0 +1,37 @@
+dependencies {
+    // Kotlin Dependencies
+    implementation "$kotlin_group:kotlin-stdlib-jdk8:$kotlin_version"
+
+    // Corda Development Dependencies
+    cordaCompile "$corda_group:corda-core:$corda_release_version"
+
+    // CorDapp Dependencies
+    cordapp project(":onixlabs-corda-core-contract")
+
+    // Test Dependencies
+    testRuntimeOnly "$junit_group:junit-jupiter-engine:$junit_version"
+    testImplementation "$junit_group:junit-jupiter-api:$junit_version"
+    testImplementation "$kotlin_group:kotlin-test:$kotlin_version"
+    testImplementation "$corda_group:corda-node-driver:$corda_release_version"
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/onix-labs/onixlabs-corda-core")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            groupId = project.parent.group
+            version = project.parent.version
+            artifactId = 'onixlabs-corda-core-workflow'
+            from components.java
+        }
+    }
+}

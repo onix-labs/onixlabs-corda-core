@@ -1,0 +1,32 @@
+/**
+ * Copyright 2020 Matthew Layton
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.onixlabs.corda.core.contract
+
+import net.corda.core.contracts.ContractState
+import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.TransactionState
+
+/**
+ * Casts a [StateAndRef] of an unknown [ContractState] to a [StateAndRef] of type [T].
+ *
+ * @param T The underlying [ContractState] type to cast to.
+ * @return Returns a [StateAndRef] of type [T].
+ * @throws ClassCastException if the unknown [ContractState] type cannot be cast to [T].
+ */
+inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractState = with(state) {
+    StateAndRef(TransactionState(T::class.java.cast(data), contract, notary, encumbrance, constraint), ref)
+}

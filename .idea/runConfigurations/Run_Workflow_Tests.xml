@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Workflow Tests" type="JUnit" factoryName="JUnit">
+    <module name="onixlabs-corda-core.onixlabs-corda-core-workflow.test" />
+    <option name="PACKAGE_NAME" value="io.onixlabs.corda.core.workflow" />
+    <option name="MAIN_CLASS_NAME" value="" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="package" />
+    <option name="VM_PARAMETERS" value="-ea -javaagent:../lib/quasar.jar" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

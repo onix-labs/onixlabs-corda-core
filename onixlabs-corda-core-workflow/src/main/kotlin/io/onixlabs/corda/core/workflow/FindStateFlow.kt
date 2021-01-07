@@ -30,14 +30,14 @@ import kotlin.reflect.jvm.jvmErasure
  * Represents the base class for implementing flows to find individual states.
  *
  * @property criteria The vault query criteria expression.
- * @property specification The vault query page specification.
+ * @property pageSpecification The vault query page specification.
  * @property contractStateType The vault query contract state type.
  */
 @StartableByRPC
 @StartableByService
 abstract class FindStateFlow<T> : FlowLogic<StateAndRef<T>?>() where T : ContractState {
     protected abstract val criteria: QueryCriteria
-    protected abstract val specification: PageSpecification
+    protected abstract val pageSpecification: PageSpecification
 
     @Suppress("UNCHECKED_CAST")
     protected val contractStateType: Class<T>
@@ -45,6 +45,6 @@ abstract class FindStateFlow<T> : FlowLogic<StateAndRef<T>?>() where T : Contrac
 
     @Suspendable
     override fun call(): StateAndRef<T>? {
-        return serviceHub.vaultService.queryBy(contractStateType, criteria, specification).states.singleOrNull()
+        return serviceHub.vaultService.queryBy(contractStateType, criteria, pageSpecification).states.singleOrNull()
     }
 }

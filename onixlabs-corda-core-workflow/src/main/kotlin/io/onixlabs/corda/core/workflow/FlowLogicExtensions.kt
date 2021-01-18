@@ -31,7 +31,6 @@ import net.corda.core.identity.Party
 import net.corda.core.internal.randomOrNull
 import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker.Step
 
 /**
@@ -49,10 +48,10 @@ val FlowLogic<*>.randomNotary: Party
         ?: throw NoSuchElementException("No available notaries.")
 
 /**
- * Gets the preferred notary from the node config, or alternatively a default notary in the event that
- * a preferred notary has not been specified in the node config.
+ * Gets the preferred notary from the CorDapp config, or alternatively a default notary in the event that
+ * a preferred notary has not been specified in the CorDapp config.
  *
- * @param defaultSelector The selector function to obtain a notary if none have been specified in the node config.
+ * @param defaultSelector The selector function to obtain a notary if none have been specified in the CorDapp config.
  * @return Returns the preferred or default notary.
  * @throws IllegalAccessException If the preferred notary cannot be found in the network map cache.
  */

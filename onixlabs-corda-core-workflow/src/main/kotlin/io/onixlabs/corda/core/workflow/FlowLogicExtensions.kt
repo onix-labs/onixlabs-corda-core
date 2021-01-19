@@ -31,6 +31,7 @@ import net.corda.core.identity.Party
 import net.corda.core.internal.randomOrNull
 import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker.Step
 
 /**
@@ -100,6 +101,64 @@ fun FlowLogic<*>.initiateFlows(parties: Iterable<AbstractParty>, vararg states: 
         .filter { it !in serviceHub.myInfo.legalIdentities }
         .map { initiateFlow(it) }
         .toSet()
+}
+
+/**
+ * Checks that sufficient flow sessions have been provided for the specified states.
+ *
+ * Assuming that the specified states will be used as input or output states in a transaction, this function will
+ * extract a set of all state participants, excluding identities owned by the initiating node, and then check
+ * that a flow session exists for each participant.
+ *
+ * @param sessions The flow sessions that have been provided to the flow.
+ * @param states The states that will be used as input or output states in a transaction.
+ * @throws FlowException if a required counter-party session is missing for a state participant.
+ */
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessions(sessions: Iterable<FlowSession>, states: Iterable<ContractState>) {
+    val stateCounterparties = states
+        .flatMap { it.participants }
+        .filter { it !in serviceHub.myInfo.legalIdentities }
+        .toSet()
+
+    val sessionCounterparties = sessions
+        .map { it.counterparty }
+        .toSet()
+
+    stateCounterparties.forEach {
+        if (it !in sessionCounterparties) {
+            throw FlowException("A flow session must be provided for the specified counter-party: $it.")
+        }
+    }
+}
+
+/**
+ * Checks that sufficient flow sessions have been provided for the specified states.
+ *
+ * Assuming that the specified states will be used as input or output states in a transaction, this function will
+ * extract a set of all state participants, excluding identities owned by the initiating node, and then check
+ * that a flow session exists for each participant.
+ *
+ * @param sessions The flow sessions that have been provided to the flow.
+ * @param states The states that will be used as input or output states in a transaction.
+ * @throws FlowException if a required counter-party session is missing for a state participant.
+ */
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessions(sessions: Iterable<FlowSession>, vararg states: ContractState) {
+    checkSufficientSessions(sessions, states.toSet())
+}
+
+/**
+ * Checks that sufficient flow sessions have been provided for the specified transaction.
+ *
+ * @param sessions The flow sessions that have been provided to the flow.
+ * @param transaction The transaction for which to check that sufficient flow sessions exist.
+ * @throws FlowException if a required counter-party session is missing for a state participant.
+ */
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessions(sessions: Iterable<FlowSession>, transaction: TransactionBuilder) {
+    val ledgerTransaction = transaction.toLedgerTransaction(serviceHub)
+    checkSufficientSessions(sessions, ledgerTransaction.inputStates + ledgerTransaction.outputStates)
 }
 
 /**

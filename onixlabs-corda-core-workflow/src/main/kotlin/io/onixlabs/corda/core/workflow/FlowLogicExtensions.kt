@@ -20,7 +20,6 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
-import net.corda.core.cordapp.CordappConfigException
 import net.corda.core.crypto.SecureHash
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
@@ -54,16 +53,16 @@ val FlowLogic<*>.randomNotary: Party
  *
  * @param defaultSelector The selector function to obtain a notary if none have been specified in the CorDapp config.
  * @return Returns the preferred or default notary.
- * @throws IllegalAccessException If the preferred notary cannot be found in the network map cache.
+ * @throws IllegalArgumentException If the preferred notary cannot be found in the network map cache.
  */
 @Suspendable
-fun FlowLogic<*>.getPreferredNotary(defaultSelector: (ServiceHub) -> Party = { firstNotary }): Party = try {
-    val name = CordaX500Name.parse(serviceHub.getAppContext().config.getString("notary"))
-    serviceHub.networkMapCache.getNotary(name) ?: throw IllegalArgumentException(
-        "Notary with the specified name cannot be found in the network map cache: $name."
-    )
-} catch (e: CordappConfigException) {
-    defaultSelector(serviceHub)
+inline fun FlowLogic<*>.getPreferredNotary(defaultSelector: (ServiceHub) -> Party = { firstNotary }): Party {
+    return if (serviceHub.getAppContext().config.exists("notary")) {
+        val name = CordaX500Name.parse(serviceHub.getAppContext().config.getString("notary"))
+        serviceHub.networkMapCache.getNotary(name) ?: throw IllegalArgumentException(
+            "Notary with the specified name cannot be found in the network map cache: $name."
+        )
+    } else defaultSelector(serviceHub)
 }
 
 /**
@@ -84,6 +83,38 @@ fun FlowLogic<*>.currentStep(step: Step, log: Boolean = true, additionalLogInfo:
             logger.info("${step.label} ($additionalLogInfo)")
         }
     }
+}
+
+/**
+ * Initiates flow sessions for the specified parties, except for identities that belong to the local node,
+ * since flow sessions are not required locally.
+ *
+ * @param parties The parties for which to create flow sessions.
+ * @return Returns a set of flow sessions.
+ */
+@Suspendable
+fun FlowLogic<*>.initiateFlows(vararg parties: AbstractParty): Set<FlowSession> {
+    return parties
+        .map { serviceHub.identityService.requireWellKnownPartyFromAnonymous(it) }
+        .filter { it !in serviceHub.myInfo.legalIdentities }
+        .map { initiateFlow(it) }
+        .toSet()
+}
+
+/**
+ * Initiates flow sessions for the participants of the specified states, except for
+ * identities that belong to the local node, since flow sessions are not required locally.
+ *
+ * @param states The states for which to create flow sessions for the state participants.
+ * @return Returns a set of flow sessions.
+ */
+@Suspendable
+fun FlowLogic<*>.initiateFlows(vararg states: ContractState): Set<FlowSession> {
+    return states.flatMap { it.participants }
+        .map { serviceHub.identityService.requireWellKnownPartyFromAnonymous(it) }
+        .filter { it !in serviceHub.myInfo.legalIdentities }
+        .map { initiateFlow(it) }
+        .toSet()
 }
 
 /**

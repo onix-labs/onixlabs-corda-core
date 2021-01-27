@@ -34,13 +34,4 @@ val Iterable<AbstractParty>.owningKeys: Set<PublicKey>
  * @return Returns a [SecureHash] representing the participants of the initial [Iterable].
  */
 val Iterable<AbstractParty>.participantHash: SecureHash
-    get() = SecureHash.sha256(toSortedSet(IdentityComparator).joinToString())
-
-/**
- * Represents the comparator which orders the participants in a collection.
- */
-private object IdentityComparator : Comparator<AbstractParty> {
-    override fun compare(p0: AbstractParty?, p1: AbstractParty?): Int {
-        return (p0?.hashCode() ?: 0).compareTo(p1?.hashCode() ?: 0)
-    }
-}
+    get() = SecureHash.sha256(map { SecureHash.sha256(it.toString()) }.toSortedSet().joinToString())

@@ -42,7 +42,7 @@ buildscript {
 }
 
 group 'io.onixlabs'
-version '1.0.0-rc5'
+version '1.0.0'
 
 subprojects {
     repositories {
@@ -75,7 +75,10 @@ subprojects {
         }
     }
 
-    jar { exclude '**/log4j2*.xml' }
+    jar {
+        exclude '**/log4j2*.xml'
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
 
     test {
         jvmArgs = ["-ea", "-javaagent:../lib/quasar.jar"]

@@ -14,12 +14,17 @@ buildscript {
         junit_version = '5.3.1'
 
         cordapp_platform_version = 8
-        cordapp_signing_enabled = true
         cordapp_contract_name = 'ONIXLabs Corda Core Contract'
         cordapp_workflow_name = 'ONIXLabs Corda Core Workflow'
         cordapp_vendor_name = 'ONIXLabs'
         cordapp_license = 'Apache License, Version 2.0'
         cordapp_version_id = 1
+
+        cordapp_signing_enabled = true
+        cordapp_signing_alias = 'cordapp-signer'
+        cordapp_signing_storetype = 'PKCS12'
+        cordapp_signing_keystore = getProperty('jar.sign.keystore')
+        cordapp_signing_password = getProperty('jar.sign.password')
     }
 
     repositories {

@@ -77,7 +77,6 @@ subprojects {
 
     jar {
         exclude '**/log4j2*.xml'
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 
     test {

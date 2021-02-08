@@ -9,6 +9,13 @@ cordapp {
     }
     signing {
         enabled = cordapp_signing_enabled
+        options {
+            keystore cordapp_signing_keystore
+            alias cordapp_signing_alias
+            storepass cordapp_signing_password
+            keypass cordapp_signing_password
+            storetype cordapp_signing_storetype
+        }
     }
 }
 

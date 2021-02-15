@@ -12,6 +12,7 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 
 -   Moved to new extension file naming convention for maintainability.
 -   Added extensions to obtain single inputs, reference inputs and outputs from a `LedgerTransaction`.
+-   Added extension to cast `Iterable<StateAndRef<*>>` to `List<StateAndRef<T>>`.
 
 ### Workflow
 

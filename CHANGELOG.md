@@ -13,6 +13,9 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 -   Moved to new extension file naming convention for maintainability.
 -   Added extensions to obtain single inputs, reference inputs and outputs from a `LedgerTransaction`.
 -   Added extension to cast `Iterable<StateAndRef<*>>` to `List<StateAndRef<T>>`.
+-   Added `ContractID` interface which automatically binds a contract ID to a contract class.
+-   Added `SignedCommandData` interface which defines a contract command that must include a signature.
+-   Added `VerifiedCommandData` interface which verifies a ledger transaction.
 
 ### Workflow
 

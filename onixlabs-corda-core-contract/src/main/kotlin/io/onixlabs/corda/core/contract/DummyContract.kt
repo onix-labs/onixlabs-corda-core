@@ -16,23 +16,50 @@
 
 package io.onixlabs.corda.core.contract
 
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.StateRef
+import net.corda.core.contracts.*
+import net.corda.core.crypto.DigitalSignature
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.LedgerTransaction
+import java.security.PublicKey
 
 /**
  * Represents a dummy state and contract that will never be used.
- * This exists so that Corda will load the contract into attachment storage.
+ * This exists for two reasons:
+ * 1. So that Corda will load the contract into attachment storage.
+ * 2. To test contract interface implementations locally.
  */
 @Suppress("UNUSED")
 internal class DummyContract : Contract {
-    override fun verify(tx: LedgerTransaction) = Unit
+
+    companion object : ContractID
 
     @BelongsToContract(DummyContract::class)
-    class DummyState : ChainState {
-        override val previousStateRef: StateRef? get() = null
-        override val participants: List<AbstractParty> get() = emptyList()
+    data class DummyState(
+        override val participants: List<AbstractParty> = emptyList(),
+        override val previousStateRef: StateRef? = null
+    ) : ChainState
+
+    override fun verify(tx: LedgerTransaction) {
+        val command = tx.commands.requireSingleCommand<DummyContractCommand>()
+        when (command.value) {
+            is DummyCommand -> command.value.verify(tx, command.signers.toSet())
+            else -> throw IllegalArgumentException("Unrecognised command: ${command.value}.")
+        }
+    }
+
+    interface DummyContractCommand : SignedCommandData, VerifiedCommandData
+
+    class DummyCommand(override val signature: DigitalSignature) : DummyContractCommand {
+
+        companion object {
+            internal const val CONTRACT_RULE_STATES_WERE_SIGNED =
+                "On dummy command, the dummy state must be signed by the state participant."
+        }
+
+        override fun verify(transaction: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
+            val state = transaction.singleOutputOfType<DummyState>()
+            val hash = state.hash()
+            CONTRACT_RULE_STATES_WERE_SIGNED using isSignedBy(hash.bytes, state.participants.single().owningKey)
+        }
     }
 }

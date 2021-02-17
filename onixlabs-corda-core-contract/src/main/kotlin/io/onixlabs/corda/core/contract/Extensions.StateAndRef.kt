@@ -30,3 +30,14 @@ import net.corda.core.contracts.TransactionState
 inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractState = with(state) {
     StateAndRef(TransactionState(T::class.java.cast(data), contract, notary, encumbrance, constraint), ref)
 }
+
+/**
+ * Casts an iterable of [StateAndRef] of an unknown [ContractState] to a list of [StateAndRef] of type [T].
+ *
+ * @param T The underlying [ContractState] type to cast to.
+ * @return Returns a list of [StateAndRef] of type [T].
+ * @throws ClassCastException if the unknown [ContractState] type cannot be cast to [T].
+ */
+inline fun <reified T> Iterable<StateAndRef<*>>.cast(): List<StateAndRef<T>> where T : ContractState {
+    return map { it.cast<T>() }
+}

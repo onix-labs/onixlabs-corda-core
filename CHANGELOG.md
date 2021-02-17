@@ -16,6 +16,7 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 -   Added `ContractID` interface which automatically binds a contract ID to a contract class.
 -   Added `SignedCommandData` interface which defines a contract command that must include a signature.
 -   Added `VerifiedCommandData` interface which verifies a ledger transaction.
+-   Added `SignatureData` class, which represents a digital signature, and it's unsigned counterpart.
 
 ### Workflow
 

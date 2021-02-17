@@ -17,7 +17,6 @@
 package io.onixlabs.corda.core.contract
 
 import net.corda.core.contracts.*
-import net.corda.core.crypto.DigitalSignature
 import net.corda.core.identity.AbstractParty
 import net.corda.core.transactions.LedgerTransaction
 import java.security.PublicKey
@@ -49,17 +48,21 @@ internal class DummyContract : Contract {
 
     interface DummyContractCommand : SignedCommandData, VerifiedCommandData
 
-    class DummyCommand(override val signature: DigitalSignature) : DummyContractCommand {
+    class DummyCommand(override val signature: SignatureData) : DummyContractCommand {
 
         companion object {
-            internal const val CONTRACT_RULE_STATES_WERE_SIGNED =
-                "On dummy command, the dummy state must be signed by the state participant."
+            internal const val CONTRACT_RULE_COMMAND_SIGNED =
+                "On dummy command, the command must be signed by the dummy state participant."
         }
 
         override fun verify(transaction: LedgerTransaction, signers: Set<PublicKey>) = requireThat {
             val state = transaction.singleOutputOfType<DummyState>()
-            val hash = state.hash()
-            CONTRACT_RULE_STATES_WERE_SIGNED using isSignedBy(hash.bytes, state.participants.single().owningKey)
+            val command = transaction.singleCommandOfType<DummyCommand>()
+
+            val key = state.participants.single().owningKey
+            val signature = command.value.signature
+
+            CONTRACT_RULE_COMMAND_SIGNED using (signature.verify(key))
         }
     }
 }

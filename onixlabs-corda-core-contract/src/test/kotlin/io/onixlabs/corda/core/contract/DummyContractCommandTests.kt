@@ -1,7 +1,6 @@
 package io.onixlabs.corda.core.contract
 
-import net.corda.core.contracts.hash
-import net.corda.core.crypto.sign
+import net.corda.core.crypto.SecureHash
 import net.corda.testing.node.ledger
 import org.junit.jupiter.api.Test
 
@@ -12,10 +11,11 @@ class DummyContractCommandTests : ContractTest() {
         services.ledger {
             transaction {
                 val state = DummyContract.DummyState(listOf(IDENTITY_A.party))
-                val signature = IDENTITY_B.keyPair.private.sign(state.hash().bytes)
+                val content = SecureHash.randomSHA256().bytes
+                val signature = SignatureData.create(content, IDENTITY_B.keyPair.private)
                 output(DummyContract.ID, state)
                 command(keysOf(IDENTITY_A), DummyContract.DummyCommand(signature))
-                failsWith(DummyContract.DummyCommand.CONTRACT_RULE_STATES_WERE_SIGNED)
+                failsWith(DummyContract.DummyCommand.CONTRACT_RULE_COMMAND_SIGNED)
             }
         }
     }

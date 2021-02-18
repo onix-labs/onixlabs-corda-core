@@ -93,10 +93,10 @@ task cleanLocal(type: Exec) {
 
 task releaseLocal(type: GradleBuild) {
     startParameter = gradle.startParameter.newInstance()
-    tasks = ['cleanLocal', 'clean', 'build', 'publishToMavenLocal']
+    tasks = ['clean', 'build', 'publishToMavenLocal']
 }
 
 task releasePublic(type: GradleBuild) {
     startParameter = gradle.startParameter.newInstance()
-    tasks = ['cleanLocal', 'clean', 'build', 'publishToMavenLocal', 'publish']
+    tasks = ['clean', 'build', 'publishToMavenLocal', 'publish']
 }

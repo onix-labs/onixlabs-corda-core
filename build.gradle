@@ -42,7 +42,7 @@ buildscript {
 }
 
 group 'io.onixlabs'
-version '1.1.0'
+version '1.2.0'
 
 subprojects {
     repositories {
@@ -93,10 +93,10 @@ task cleanLocal(type: Exec) {
 
 task releaseLocal(type: GradleBuild) {
     startParameter = gradle.startParameter.newInstance()
-    tasks = ['cleanLocal', 'clean', 'build', 'publishToMavenLocal']
+    tasks = ['clean', 'build', 'publishToMavenLocal']
 }
 
 task releasePublic(type: GradleBuild) {
     startParameter = gradle.startParameter.newInstance()
-    tasks = ['cleanLocal', 'clean', 'build', 'publishToMavenLocal', 'publish']
+    tasks = ['clean', 'build', 'publishToMavenLocal', 'publish']
 }

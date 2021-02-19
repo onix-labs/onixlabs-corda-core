@@ -20,11 +20,27 @@ import java.util.*
 data class SignatureData(private val content: ByteArray, private val signature: DigitalSignature) {
 
     companion object {
+
+        /**
+         * Creates a signature from the specified content and private key.
+         *
+         * @param content The content to sign.
+         * @param privateKey The private key to sign the content.
+         * @return Returns a new signature containing the content and signed data.
+         */
         fun create(content: ByteArray, privateKey: PrivateKey): SignatureData {
             val signature = privateKey.sign(content)
             return SignatureData(content, signature)
         }
 
+        /**
+         * Creates a signature from the specified content by resolving the signing key from the service hub.
+         *
+         * @param content The content to sign.
+         * @param publicKey The public key to resolve from the service hub.
+         * @param serviceHub The service hub to resolve the public key.
+         * @return Returns a new signature containing the content and signed data.
+         */
         fun create(content: ByteArray, publicKey: PublicKey, serviceHub: ServiceHub): SignatureData {
             val signature = serviceHub.keyManagementService.sign(content, publicKey)
             return SignatureData(content, signature.withoutKey())

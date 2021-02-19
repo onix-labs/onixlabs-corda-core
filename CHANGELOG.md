@@ -4,6 +4,33 @@
 
 This document serves as the change log for the ONIXLabs Corda Core API.
 
+## Version 1.2.0
+
+### Contract
+
+#### ContractID (interface)
+
+Defines the contract ID for a Corda contract. Rather than referencing the contract by a string or by its canonical name, implementing `ContractID` on a companion object adds the contract ID to the class for you automatically.
+
+#### SignedCommandData (interface)
+
+Defines a Corda contract command that maintains verifiable signature data. This can be used within a contract to check that a particular contract participant signed over the command - usually the transaction initiator.
+
+#### VerifiedCommandData (interface)
+
+Defines a Corda contract command that that localises its verification. Rather than commands simply being marker objects to determine which verification to execute, this leans towards the single responsibility principle, whereby each command is responsible for its verification.
+
+#### SignatureData (class)
+
+Represents a composite of both signed and unsigned data, which can be verified with a public key.
+
+### Workflow
+
+#### Extensions
+
+-   Moved to new extension naming convention for maintainability.
+-   Added extensions to filter a set of sessions to include or exclude certain counter-parties, or state participants.
+
 ## Version 1.1.0
 
 ### Contract
@@ -13,10 +40,6 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 -   Moved to new extension file naming convention for maintainability.
 -   Added extensions to obtain single inputs, reference inputs and outputs from a `LedgerTransaction`.
 -   Added extension to cast `Iterable<StateAndRef<*>>` to `List<StateAndRef<T>>`.
--   Added `ContractID` interface which automatically binds a contract ID to a contract class.
--   Added `SignedCommandData` interface which defines a contract command that must include a signature.
--   Added `VerifiedCommandData` interface which verifies a ledger transaction.
--   Added `SignatureData` class, which represents a digital signature, and it's unsigned counterpart.
 
 ### Workflow
 

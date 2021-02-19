@@ -24,11 +24,35 @@ import net.corda.core.contracts.TransactionState
  * Casts a [StateAndRef] of an unknown [ContractState] to a [StateAndRef] of type [T].
  *
  * @param T The underlying [ContractState] type to cast to.
+ * @param contractStateClass The [ContractState] class to cast to.
  * @return Returns a [StateAndRef] of type [T].
  * @throws ClassCastException if the unknown [ContractState] type cannot be cast to [T].
  */
-inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractState = with(state) {
-    StateAndRef(TransactionState(T::class.java.cast(data), contract, notary, encumbrance, constraint), ref)
+fun <T> StateAndRef<*>.cast(contractStateClass: Class<T>): StateAndRef<T> where T : ContractState = with(state) {
+    StateAndRef(TransactionState(contractStateClass.cast(data), contract, notary, encumbrance, constraint), ref)
+}
+
+/**
+ * Casts a [StateAndRef] of an unknown [ContractState] to a [StateAndRef] of type [T].
+ *
+ * @param T The underlying [ContractState] type to cast to.
+ * @return Returns a [StateAndRef] of type [T].
+ * @throws ClassCastException if the unknown [ContractState] type cannot be cast to [T].
+ */
+inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractState {
+    return cast(T::class.java)
+}
+
+/**
+ * Casts an iterable of [StateAndRef] of an unknown [ContractState] to a list of [StateAndRef] of type [T].
+ *
+ * @param T The underlying [ContractState] type to cast to.
+ * @param contractStateClass The [ContractState] class to cast to.
+ * @return Returns a list of [StateAndRef] of type [T].
+ * @throws ClassCastException if the unknown [ContractState] type cannot be cast to [T].
+ */
+fun <T> Iterable<StateAndRef<*>>.cast(contractStateClass: Class<T>): List<StateAndRef<T>> where T : ContractState {
+    return map { it.cast(contractStateClass) }
 }
 
 /**
@@ -39,5 +63,5 @@ inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractS
  * @throws ClassCastException if the unknown [ContractState] type cannot be cast to [T].
  */
 inline fun <reified T> Iterable<StateAndRef<*>>.cast(): List<StateAndRef<T>> where T : ContractState {
-    return map { it.cast<T>() }
+    return cast(T::class.java)
 }

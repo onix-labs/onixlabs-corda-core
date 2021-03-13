@@ -4,162 +4,1050 @@
 
 This document serves as the change log for the ONIXLabs Corda Core API.
 
+## Version 2.0.0
+
+TODO - add version 2 features.
+
+
+
 ## Version 1.2.0
 
-### Contract
+### ContractID *Interface*
 
-#### ContractID (interface)
+**Module:** onixlabs-corda-core-contract
 
-Defines the contract ID for a Corda contract. Rather than referencing the contract by a string or by its canonical name, implementing `ContractID` on a companion object adds the contract ID to the class for you automatically.
+**Package:** io.onixlabs.corda.core.contract
 
-#### SignedCommandData (interface)
+#### Description
 
-Defines a Corda contract command that maintains verifiable signature data. This can be used within a contract to check that a particular contract participant signed over the command - usually the transaction initiator.
+Defines an interface which automatically binds a contract ID to a contract class.
 
-#### VerifiedCommandData (interface)
+```kotlin
+interface ContractID
+```
 
-Defines a Corda contract command that that localises its verification. Rather than commands simply being marker objects to determine which verification to execute, this leans towards the single responsibility principle, whereby each command is responsible for its verification.
+#### Remarks
 
-#### SignatureData (class)
+Rather than referencing the contract by a string or by its canonical name, implementing `ContractID` on a companion object adds the contract ID to the class for you automatically.
 
-Represents a composite of both signed and unsigned data, which can be verified with a public key.
+---
 
-### Workflow
+### SignatureData *Class*
 
-#### Extensions
+**Module:** onixlabs-corda-core-contract
 
--   Moved to new extension naming convention for maintainability.
--   Added extensions to filter a set of sessions to include or exclude certain counter-parties, or state participants.
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Represents an array of unsigned bytes, and its signed equivalent.
+
+```kotlin
+@CordaSerializable
+data class SignatureData(
+    private val content: ByteArray, 
+    private val signature: DigitalSignature
+)
+```
+
+---
+
+### SignedCommandData *Interface*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Defines a contract command that must include a signature.
+
+```kotlin
+interface SignedCommandData : CommandData
+```
+
+#### Remarks
+
+This can be used within a contract to check that a particular contract participant signed over the command; usually the transaction initiator.
+
+---
+
+### VerifiedCommandData *Interface*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Defines a contract command that can verify a ledger transaction.
+
+```kotlin
+interface VerifiedCommandData : CommandData
+```
+
+#### Remarks
+
+Rather than commands simply being marker objects to determine which verification to execute, this leans towards the single responsibility principle, whereby each command is responsible for its verification.
+
+---
 
 ## Version 1.1.0
 
-### Contract
+>   🔵 **INFORMATION**
+>
+>   In addition to the new APIs in this release, all extension files have been renamed to use a better naming convention for maintainability.
 
-#### Extensions
+### singleInputRefOfType *Extension Function*
 
--   Moved to new extension file naming convention for maintainability.
--   Added extensions to obtain single inputs, reference inputs and outputs from a `LedgerTransaction`.
--   Added extension to cast `Iterable<StateAndRef<*>>` to `List<StateAndRef<T>>`.
+**Module:** onixlabs-corda-core-contract
 
-### Workflow
+**Package:** io.onixlabs.corda.core.contract
 
-#### Extensions
+#### Description
 
--   Moved to new extension naming convention for maintainability.
--   Added extensions to filter a set of sessions to include or exclude certain counter-parties, or state participants.
+Obtains a single input ref from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleInputRefOfType(contractStateClass: Class<T>): StateAndRef<T>
+
+inline fun <reified T : ContractState> LedgerTransaction.singleInputRefOfType(): StateAndRef<T>
+```
+
+---
+
+### singleInputOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single input from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleInputOfType(contractStateClass: Class<T>): T
+
+inline fun <reified T : ContractState> LedgerTransaction.singleInputOfType(): T
+```
+
+---
+
+### singleReferenceInputRefOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single reference input ref from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleReferenceInputRefOfType(contractStateClass: Class<T>): StateAndRef<T>
+
+inline fun <reified T : ContractState> LedgerTransaction.singleReferenceInputRefOfType(): StateAndRef<T>
+```
+
+---
+
+### singleReferenceInputOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single reference input from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleReferenceInputOfType(contractStateClass: Class<T>): T
+
+inline fun <reified T : ContractState> LedgerTransaction.singleReferenceInputOfType(): T
+```
+
+---
+
+### singleOutputRefOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single output ref from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleOutputRefOfType(contractStateClass: Class<T>): StateAndRef<T>
+
+inline fun <reified T : ContractState> LedgerTransaction.singleOutputRefOfType(): StateAndRef<T>
+```
+
+---
+
+### singleOutputOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single output from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleOutputOfType(contractStateClass: Class<T>): T
+
+inline fun <reified T : ContractState> LedgerTransaction.singleOutputOfType(): T
+```
+
+---
+
+### singleOutputOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single output from a ledger transaction.
+
+```kotlin
+fun <T : ContractState> LedgerTransaction.singleOutputOfType(contractStateClass: Class<T>): T
+
+inline fun <reified T : ContractState> LedgerTransaction.singleOutputOfType(): T
+```
+
+---
+
+### singleCommandOfType *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Obtains a single command from a ledger transaction.
+
+```kotlin
+fun <T : CommandData> LedgerTransaction.singleCommandOfType(commandClass: Class<T>): Command<T>
+
+inline fun <reified T : CommandData> LedgerTransaction.singleCommandOfType(): Command<T>
+```
+
+---
+
+### sessionsFor *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Obtains a collection of sessions for the specified parties, or state participants.
+
+```kotlin
+fun Iterable<FlowSession>.sessionsFor(parties: Iterable<AbstractParty>): Set<FlowSession>
+
+fun Iterable<FlowSession>.sessionsFor(vararg parties: AbstractParty): Set<FlowSession>
+
+fun Iterable<FlowSession>.sessionsFor(vararg states: ContractState): Set<FlowSession>
+```
+
+---
+
+### sessionFor *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Obtains a session for the specified party.
+
+```kotlin
+fun Iterable<FlowSession>.sessionFor(party: AbstractParty): FlowSession
+```
+
+---
+
+### sessionsExcluding *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Obtains a collection of sessions excluding those for the specified parties, or state participants.
+
+```kotlin
+fun Iterable<FlowSession>.sessionsExcluding(parties: Iterable<AbstractParty>): Set<FlowSession>
+
+fun Iterable<FlowSession>.sessionsExcluding(vararg parties: AbstractParty): Set<FlowSession>
+
+fun Iterable<FlowSession>.sessionsExcluding(vararg states: ContractState): Set<FlowSession>
+```
+
+---
+
+### cast *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Casts an iterable of `StateAndRef` of an unknown `ContractState` to a list of `StateAndRef` of type `T`.
+
+```kotlin
+inline fun <reified T> Iterable<StateAndRef<*>>.cast(): List<StateAndRef<T>> where T : ContractState
+```
+
+---
 
 ## Version 1.0.0
 
-### Contract
+### ChainState *Interface*
 
-#### ChainState (interface)
+**Module:** onixlabs-corda-core-contract
 
-Defines a Corda chain state. 
+**Package:** io.onixlabs.corda.core.contract
 
->   A chain state is similar to a `LinearState`, in that it represents a set of state transitions. Chain states adopt a concept similar to blockchain, where each new state transition references the previous one by it's `StateRef`, or null if it's the first state in the chain.
+#### Description
 
-#### Hashable (interface)
+Defines a Corda chain state.
 
-Defines an object that can produce a unique hash. 
+```kotlin
+interface ChainState
+```
 
->   This is useful if you require some level of state uniqueness.
+#### Remarks
 
-#### Resolvable (interface)
+A chain state is similar to a `LinearState` in that it represents a set of state transitions. Chain states adopt a concept similar to a blockchain, where each new state transition references the previous one by its `StateRef`, or `null` if it's the first state in the chain.
 
-Defines an object which resolves a `ContractState`. 
+---
 
->   This is the fundamental principle on which state pointers are implemented in Corda; their ability to maintain and resolve a reference back to another known state in the vault. The implementation here is flexible and open, allowing developers to model resolvable as a design pattern, rather than as a strict implementation detail.
+### Hashable *Interface*
 
-#### TransactionResolution (enum)
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Defines an object that can produce a unique hash.
+
+```kotlin
+interface Hashable
+```
+
+#### Remarks
+
+When used in conjunction with the `ChainState` interface, this can be useful for modelling states that always produce a unique hash for every state transition.
+
+---
+
+### Resolvable *Interface*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Defines an object which resolves a `ContractState`.
+
+```kotlin
+interface Resolvable<T> where T : ContractState
+```
+
+#### Remarks
+
+This is the fundamental principle on which state pointers are implemented in Corda; their ability to maintain and resolve a reference back to another known state in the vault. The implementation here is flexible and open, allowing developers to model resolvable as a design pattern, rather than as a strict implementation detail.
+
+---
+
+### TransactionResolution *Enum Class*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
 
 Defines how to resolve states from a transaction, and is used by the `Resolvable` interface.
 
-#### Extensions
+```kotlin
+enum class TransactionResolution
+```
 
--   Added extension to obtain a set of owning keys from a collection of `AbstractParty`.
--   Added extension to obtain a participant hash to determine state uniqueness by participation.
--   Added extensions to determine whether a chain state instance is pointing to a specified `StateRef`.
--   Added extension to cast an unknown `StateAndRef<*>` to a typed `StateAndRef<T>`.
+#### Entries
 
-### Workflow
+| Name          | Description                                                  |
+| ------------- | ------------------------------------------------------------ |
+| **INPUT**     | Defines that a resolvable should resolve from a transaction input state. |
+| **OUTPUT**    | Defines that a resolvable should resolve from a transaction output state. |
+| **REFERENCE** | Defines that a resolvable should resolve from a transaction reference input state. |
 
-#### FindStateFlow (abstract class)
+---
+
+### owningKeys *Extension Property*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Gets the owning keys from an `Iterable` of `AbstractParty`.
+
+```kotlin
+val Iterable<AbstractParty>.owningKeys: Set<PublicKey> 
+```
+
+---
+
+### participantHash *Extension Property*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Gets a hash from an `Iterable` of `AbstractParty`.
+
+```kotlin
+val Iterable<AbstractParty>.participantHash: SecureHash
+```
+
+#### Remarks
+
+This extension property can be used to determine whether the participants of a state are unique, regardless of the ordering of those participants.
+
+---
+
+### isPointingTo *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Determines whether the current state is pointing to the specified `StateRef`, or `StateAndRef`.
+
+```kotlin
+fun <T> T.isPointingTo(stateRef: StateRef): Boolean where T : ChainState
+fun <T> T.isPointingTo(stateAndRef: StateAndRef<T>): Boolean where T : ChainState
+```
+
+---
+
+### cast *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Casts a `StateAndRef` of an unknown `ContractState` to a `StateAndRef` of type `T`.
+
+```kotlin
+inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractState
+```
+
+---
+
+### FindStateFlow *Abstract Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
 
 Represents the base class for implementing a query that finds a single state.
 
-#### FindStatesFlow (abstract class)
+```kotlin
+abstract class FindStateFlow<T> : FlowLogic<StateAndRef<T>?>() where T : ContractState
+```
+
+#### Remarks
+
+This design pattern enables developers to be more consistent in their approach to performing vault queries, regardless of whether they're being performed from within the node (using `ServiceHub`) or from an RPC client (using `CordaRPCOps`).
+
+---
+
+### FindStatesFlow *Abstract Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
 
 Represents the base class for implementing a query that finds multiple states.
 
->   This design pattern enables developers to be more consistent in their approach to performing vault queries, regardless of whether they're being performed from within the node (using `ServiceHub`) or from an RPC client (using `CordaRPCOps`).
+```kotlin
+abstract class FindStatesFlow<T> : FlowLogic<List<StateAndRef<T>>>() where T : ContractState
+```
 
-#### Message (open class)
+#### Remarks
 
-Represents an open, transient message.
+This design pattern enables developers to be more consistent in their approach to performing vault queries, regardless of whether they're being performed from within the node (using `ServiceHub`) or from an RPC client (using `CordaRPCOps`).
 
-#### MessageAcknowledgement (open class)
+---
 
-Represents an open acknowledgement to a message.
+### Message *Open Class*
 
-#### SendMessageFlow (class)
+**Module:** onixlabs-corda-core-workflow
 
-Sends a message to other nodes on the Corda network.
+**Package:** io.onixlabs.corda.core.workflow
 
-#### ReceiveMessageFlow (class)
+#### Description
 
-Receives a message from another node on the Corda network.
+Represents a transient message.
 
-#### SendMessageAcknowledgementFlow (class)
+```kotlin
+open class Message<T>(val data: T, val id: UUID = UUID.randomUUID()) where T : Any
+```
 
-Sends a message acknowledgement to other nodes on the Corda network.
+---
 
-#### ReceiveMessageAcknowledgementFlow (class)
+### MessageAcknowledgement *Open Class*
 
-Receives a message acknowledgement from another node on the Corda network.
+**Module:** onixlabs-corda-core-workflow
 
-#### TransactionNote (class)
+**Package:** io.onixlabs.corda.core.workflow
 
-Represents a wrapper around a transaction note and the transaction that the note belongs to.
+#### Description
 
-#### SendTransactionNoteFlow (class)
+Represents an acknowledgement to a transient message.
 
-Sends a transaction note to other nodes on the Corda network for persistence.
+```kotlin
+open class MessageAcknowledgement(val id: UUID)
+```
 
-#### ReceiveTransactionNoteFlow (class)
+---
 
-Receives a transaction note from another node on the Corda network, and optionally persists it.
+### SendMessageFlow *Class*
 
->   All messaging APIs are part of the ONIXLabs Corda Code messaging protocol, which allows Corda nodes to send and receive transient messages and messages acknowledgements, which are not bound to the ledger.
+**Module:** onixlabs-corda-core-workflow
 
-#### Extensions
+**Package:** io.onixlabs.corda.core.workflow
 
--   Added extensions to obtain the first notary from the network map cache.
--   Added extensions to obtain a random notary from the network map cache.
--   Added extensions to obtain the preferred notary from the CorDapp config file.
--   Added extensions to set, and optionally log progress tracker steps.
--   Added extensions to initiate flow sessions for a collection of parties and/or state participants.
--   Added extensions to check that sufficient flow sessions have been passed for the specified states.
--   Added extensions to find transactions by transaction ID or `StateRef`.
--   Added constants for default sorting and default, or maximum size page specification.
--   Added extensions to  build complex query expressions.
+#### Description
 
-### Integration
+Represents a sub-flow that sends a message to the specified counter-parties.
 
-#### RPCService (abstract class)
+```kotlin
+class SendMessageFlow<T>(
+    private val message: T,
+    private val sessions: Set<FlowSession>,
+    private val requestAcknowledgement: Boolean = false,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<Map<Party, MessageAcknowledgement>>() where T : Message<*>
+```
 
-Represents the base class for implementing services that utilize `CordaRPCOps`.
+#### Remarks
 
-#### MessageService (class)
+Use the built-in `SendMessageFlow.Initiator` class in order to use this class as an initiating flow.
+
+```kotlin
+@StartableByRPC
+@StartableByService
+@InitiatingFlow
+class Initiator<T>(
+    private val message: T,
+    private val counterparties: Collection<Party>
+) : FlowLogic<Map<Party, MessageAcknowledgement>>() where T : Message<*>
+```
+
+---
+
+### ReceiveMessageFlow *Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Represents a sub-flow that receives a message from the specified counter-parties.
+
+```kotlin
+class ReceiveMessageFlow<T>(
+    private val session: FlowSession,
+    private val requestAcknowledgement: Boolean = false,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<Pair<Party, T>>() where T : Message<*>
+```
+
+#### Remarks
+
+Use the built-in `ReceiveMessageFlow.Receiver` class in order to register it as an initiated-by flow, and listen for message results.
+
+```kotlin
+@InitiatedBy(SendMessageFlow.Initiator::class)
+class Receiver<T>(private val session: FlowSession) : FlowLogic<Pair<Party, T>>() where T : Message<*>
+```
+
+---
+
+### SendMessageAcknowledgementFlow *Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Represents a sub-flow that sends a message acknowledgement to the specified counter-party.
+
+```kotlin
+class SendMessageAcknowledgementFlow<T>(
+    private val acknowledgement: T,
+    private val session: FlowSession,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<Unit>() where T : MessageAcknowledgement
+```
+
+#### Remarks
+
+Use the built-in `SendMessageAcknowledgementFlow.Initiator` class in order to use this class as an initiating flow.
+
+```kotlin
+@StartableByRPC
+@StartableByService
+@InitiatingFlow
+class Initiator<T>(
+    private val acknowledgement: T,
+    private val counterparty: Party
+) : FlowLogic<Unit>() where T : MessageAcknowledgement
+```
+
+---
+
+### ReceiveMessageAcknowledgementFlow *Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Represents a sub-flow that receives a message acknowledgement from the specified counter-party.
+
+```kotlin
+class ReceiveMessageAcknowledgementFlow<T>(
+    private val session: FlowSession,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<Pair<Party, T>>()
+```
+
+#### Remarks
+
+Use the built-in `ReceiveMessageAcknowledgementFlow.Receiver` class in order to register it as an initiated-by flow, and listen for message acknowledgement results.
+
+```kotlin
+@InitiatedBy(SendMessageAcknowledgementFlow.Initiator::class)
+class Receiver<T>(private val session: FlowSession) : FlowLogic<Pair<Party, T>>() where T : MessageAcknowledgement
+```
+
+---
+
+### TransactionNote *Data Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Represents a transaction note.
+
+```kotlin
+data class TransactionNote(val transactionId: SecureHash, val text: String)
+```
+
+---
+
+### SendTransactionNoteFlow *Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Represents a sub-flow that sends a transaction note to the specified counter-parties.
+
+```kotlin
+class SendTransactionNoteFlow(
+    private val transactionNote: TransactionNote,
+    private val sessions: Collection<FlowSession>,
+    private val addNoteToTransaction: Boolean = true,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<Unit>()
+```
+
+#### Remarks
+
+Use the built-in `SendTransactionNoteFlow.Initiator` class in order to use this class as an initiating flow.
+
+```kotlin
+@StartableByRPC
+@StartableByService
+@InitiatingFlow
+class Initiator(
+    private val transactionNote: TransactionNote,
+    private val counterparties: Iterable<Party>,
+    private val addNoteToTransaction: Boolean = true
+) : FlowLogic<Unit>()
+```
+
+---
+
+### ReceiveTransactionNoteFlow *Class*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Represents a sub-flow that receives a transaction note from the specified counter-party.
+
+```kotlin
+class ReceiveTransactionNoteFlow(
+    private val session: FlowSession,
+    private val persist: Boolean = true,
+    private val expectedTransactionId: SecureHash? = null,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<Pair<Party, TransactionNote>>()
+```
+
+#### Remarks
+
+Use the built-in `ReceiveTransactionNoteFlow.Receiver` class in order to register it as an initiated-by flow, and listen for transaction note results.
+
+```kotlin
+@InitiatedBy(SendTransactionNoteFlow.Initiator::class)
+class Receiver(private val session: FlowSession) : FlowLogic<Pair<Party, TransactionNote>>()
+```
+
+---
+
+### firstNotary *Extension Property*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Gets the first available notary.
+
+```kotlin
+val FlowLogic<*>.firstNotary: Party
+```
+
+#### Remarks
+
+This extension property will throw a `NoSuchElementException` if there are no available notaries.
+
+---
+
+### randomNotary *Extension Property*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Gets a randomly available notary.
+
+```kotlin
+val FlowLogic<*>.randomNotary: Party
+```
+
+#### Remarks
+
+This extension property will throw a `NoSuchElementException` if there are no available notaries.
+
+---
+
+### getPreferredNotary *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Gets the preferred notary from the CorDapp config, or alternatively a default notary in the event that a preferred notary has not been specified in the CorDapp config.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.getPreferredNotary(
+    serviceHub: ServiceHub = this.serviceHub,
+    defaultSelector: (ServiceHub) -> Party = { firstNotary }
+): Party
+```
+
+#### Remarks
+
+This extension property will throw an `IllegalArgumentException` if the preferred notary cannot be found in the network map cache.
+
+---
+
+### currentStep *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Sets the current progress tracker step.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.currentStep(step: Step, log: Boolean = true, additionalLogInfo: String? = null)
+```
+
+---
+
+### initiateFlows *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Initiates flow sessions for the specified parties and/or states, except for identities that belong to the local node, since flow sessions are not required locally.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.initiateFlows(vararg parties: AbstractParty): Set<FlowSession>
+
+@Suspendable
+fun FlowLogic<*>.initiateFlows(vararg states: ContractState): Set<FlowSession>
+
+@Suspendable
+fun FlowLogic<*>.initiateFlows(parties: Iterable<AbstractParty>, vararg states: ContractState): Set<FlowSession>
+```
+
+---
+
+### checkSufficientSessions *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Checks that sufficient flow sessions have been provided for the specified states, of from the input and output states of a transaction builder.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessions(sessions: Iterable<FlowSession>, states: Iterable<ContractState>)
+
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessions(sessions: Iterable<FlowSession>, vararg states: ContractState)
+
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessions(sessions: Iterable<FlowSession>, transaction: TransactionBuilder)
+```
+
+#### Remarks
+
+Assuming that the specified states will be used as input or output states in a transaction, this function will extract a set of all state participants, excluding identities owned by the initiating node, and then check that a flow session exists for each participant.
+
+---
+
+### findTransaction *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Finds a recorded transaction in the vault for the specified transaction hash.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.findTransaction(transactionHash: SecureHash): SignedTransaction
+
+@Suspendable
+fun FlowLogic<*>.findTransaction(stateRef: StateRef): SignedTransaction
+
+@Suspendable
+fun FlowLogic<*>.findTransaction(stateAndRef: StateAndRef<*>): SignedTransaction
+```
+
+---
+
+### DEFAULT_SORTING *Extension Property*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+The default sorting order.
+
+```kotlin
+val DEFAULT_SORTING: Sort
+```
+
+---
+
+### DEFAULT_PAGE_SPECIFICATION *Extension Property*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+The default page specification.
+
+```kotlin
+val DEFAULT_PAGE_SPECIFICATION: PageSpecification
+```
+
+---
+
+### MAXIMUM_PAGE_SPECIFICATION *Extension Property*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+The maximum page specification.
+
+```kotlin
+val MAXIMUM_PAGE_SPECIFICATION: PageSpecification
+```
+
+---
+
+### andWithExpressions *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Builds a custom query criteria. This combines all non-null query expressions using logical AND.
+
+```kotlin
+fun <T : StatePersistable> QueryCriteria.VaultQueryCriteria.andWithExpressions(
+    vararg expressions: CriteriaExpression<T, Boolean>?
+): QueryCriteria
+```
+
+---
+
+### orWithExpressions *Extension Function*
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+#### Description
+
+Builds a custom query criteria. This combines all non-null query expressions using logical OR.
+
+```kotlin
+fun <T : StatePersistable> QueryCriteria.VaultQueryCriteria.andWithExpressions(
+    vararg expressions: CriteriaExpression<T, Boolean>?
+): QueryCriteria
+```
+
+---
+
+### RPCService *Abstract Class*
+
+**Module:** onixlabs-corda-core-integration
+
+**Package:** io.onixlabs.corda.core.integration
+
+#### Description
+
+Represents the base class for implementing integration services over RPC.
+
+```kotlin
+abstract class RPCService(val rpc: CordaRPCOps)
+```
+
+---
+
+### MessageService *Class*
+
+**Module:** onixlabs-corda-core-integration
+
+**Package:** io.onixlabs.corda.core.integration
+
+#### Description
 
 Represents an RPC service for sending and subscribing to transient messages.
 
-#### MessageAcknowledgementService (class)
+```kotlin
+class MessageService(rpc: CordaRPCOps) : RPCService(rpc)
+```
+
+---
+
+### MessageAcknowledgementService *Class*
+
+**Module:** onixlabs-corda-core-integration
+
+**Package:** io.onixlabs.corda.core.integration
+
+#### Description
 
 Represents an RPC service for sending and subscribing to transience message acknowledgements.
 
-#### TransactionNoteService (class)
+```kotlin
+class MessageAcknowledgementService(rpc: CordaRPCOps) : RPCService(rpc)
+```
+
+---
+
+### TransactionNoteService *Class*
+
+**Module:** onixlabs-corda-core-integration
+
+**Package:** io.onixlabs.corda.core.integration
+
+#### Description
 
 Represents an RPC service for adding, sending and persisting transaction notes.
 
+```kotlin
+class TransactionNoteService(rpc: CordaRPCOps) : RPCService(rpc)
+```
 
+---
 

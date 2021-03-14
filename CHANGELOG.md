@@ -92,6 +92,50 @@ Rather than commands simply being marker objects to determine which verification
 
 ---
 
+### cast *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Casts a `StateAndRef` of an unknown `ContractState` to a `StateAndRef` of type `T`.
+
+```kotlin
+fun <T> StateAndRef<*>.cast(contractStateClass: Class<T>): StateAndRef<T> where T : ContractState
+
+inline fun <reified T> StateAndRef<*>.cast(): StateAndRef<T> where T : ContractState
+```
+
+>   🔵 **INFORMATION**
+>
+>   This API exists in version 1.0.0 but only using reified generics.
+
+---
+
+### cast *Extension Function*
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+#### Description
+
+Casts an iterable of `StateAndRef` of an unknown `ContractState` to a list of `StateAndRef` of type `T`.
+
+```kotlin
+fun <T> Iterable<StateAndRef<*>>.cast(contractStateClass: Class<T>): List<StateAndRef<T>> where T : ContractState
+
+inline fun <reified T> Iterable<StateAndRef<*>>.cast(): List<StateAndRef<T>> where T : ContractState
+```
+
+>   🔵 **INFORMATION**
+>
+>   This API exists in version 1.1.0 but only using reified generics.
+
+---
+
 ## Version 1.1.0
 
 >   🔵 **INFORMATION**

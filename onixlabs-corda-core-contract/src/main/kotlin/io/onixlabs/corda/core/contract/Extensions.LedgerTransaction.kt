@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Matthew Layton
+ * Copyright 2020-2021 Matthew Layton
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package io.onixlabs.corda.core.contract
 
-import net.corda.core.contracts.Command
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 
 /**
@@ -167,4 +164,35 @@ fun <T : CommandData> LedgerTransaction.singleCommandOfType(commandClass: Class<
  */
 inline fun <reified T : CommandData> LedgerTransaction.singleCommandOfType(): Command<T> {
     return singleCommandOfType(T::class.java)
+}
+
+/**
+ * Provides utility for [VerifiedCommandData] implementations, specifying which commands are allowed within a contract.
+ * This function will verify allowed commands, or throw an [IllegalArgumentException] exception if the command is not allowed.
+ *
+ * @param T The underlying [VerifiedCommandData] type.
+ * @param commandClass The class of the allowed commands.
+ * @param allowed the allowed commands.
+ * @throws [IllegalArgumentException] if the command is not allowed.
+ */
+fun <T : VerifiedCommandData> LedgerTransaction.allowCommands(commandClass: Class<T>, vararg allowed: Class<out T>) {
+    val command = commands.requireSingleCommand(commandClass)
+
+    if (command.value.javaClass !in allowed) {
+        throw IllegalArgumentException("Unrecognised command: ${command.value.javaClass.canonicalName}.")
+    }
+
+    command.value.verify(this, command.signers.toSet())
+}
+
+/**
+ * Provides utility for [VerifiedCommandData] implementations, specifying which commands are allowed within a contract.
+ * This function will verify allowed commands, or throw an [IllegalArgumentException] exception if the command is not allowed.
+ *
+ * @param T The underlying [VerifiedCommandData] type.
+ * @param allowed the allowed commands.
+ * @throws [IllegalArgumentException] if the command is not allowed.
+ */
+inline fun <reified T : VerifiedCommandData> LedgerTransaction.allowCommands(vararg allowed: Class<out T>) {
+    return allowCommands(T::class.java, *allowed)
 }

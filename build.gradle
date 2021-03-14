@@ -23,8 +23,8 @@ buildscript {
         cordapp_signing_enabled = true
         cordapp_signing_alias = 'cordapp-signer'
         cordapp_signing_storetype = 'PKCS12'
-        cordapp_signing_keystore = getProperty('jar.sign.keystore')
-        cordapp_signing_password = getProperty('jar.sign.password')
+        cordapp_signing_keystore = findProperty('onixlabs.production.jarsign.keystore') ?: getProperty('onixlabs.development.jarsign.keystore')
+        cordapp_signing_password = findProperty('onixlabs.production.jarsign.password') ?: getProperty('onixlabs.development.jarsign.password')
     }
 
     repositories {
@@ -42,7 +42,7 @@ buildscript {
 }
 
 group 'io.onixlabs'
-version '1.2.0'
+version '2.0.0-rc1'
 
 subprojects {
     repositories {

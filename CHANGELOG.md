@@ -6,13 +6,22 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 
 ## Version 2.0.0
 
->   🔵 **INFORMATION**
->
->   This release contains several new features, including an improved model for relational states in Corda and a model for creating vault query flows that encapsulates common query functions. In addition to these new features, this release also contains a CorDapp which may be used as a reference architecture for CorDapp development in general, but also serves as a reference to understanding how the features of this API are implemented and tested.
->
 >   🟠 **WARNING**
 >
->   This release contains breaking changes from version 1.2.0 and is not backwards compatible.
+>   **This release contains breaking changes from version 1.2.0 and is not backwards compatible.**
+>
+>   🔵 **INFORMATION**
+>
+>   A high level overview of the features in this release:
+>
+>   -   A set of APIs for obtaining underlying generic type information, used within this API and beyond.
+>   -   A model for creating one-to-one and one-to-many state relationships.
+>   -   A query parameter model for improved vault query capability.
+>   -   A reference CorDapp which implements, demonstrates and tests the features of this API.
+>
+>   🔐 **CORDAPP SIGNING**
+>
+>   As of version 1.0.0, this API has been signed with the ONIXLabs production signing key. Historically, clones of this repository would have failed to build, since the signing key is a secret. Version 2.0.0 ships with the ONIXLabs developer key, allowing this repository to be cloned, built and tested locally.
 
 ---
 

@@ -32,7 +32,7 @@ fun Class<*>.getArgumentTypes(): List<Type> {
 }
 
 /**
- * Gets a argument type from a generic superclass.
+ * Gets an argument type from a generic superclass.
  *
  * @param index The index of the argument to get.
  * @return Returns a list of generic argument types.

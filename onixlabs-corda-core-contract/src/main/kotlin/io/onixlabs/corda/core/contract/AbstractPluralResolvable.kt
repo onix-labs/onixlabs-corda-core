@@ -26,7 +26,7 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.LedgerTransaction
 
 /**
- * Represents the base class for implementing plural contract state resolvers.
+ * Represents the base class for implementing plural (one-to-many) contract state resolvers.
  *
  * @param T The underlying [ContractState] type.
  * @property contractStateType The contract state class to resolve.

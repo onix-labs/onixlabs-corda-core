@@ -16,7 +16,6 @@
 
 package io.onixlabs.corda.core.contract
 
-import io.onixlabs.corda.core.TypeReference
 import io.onixlabs.corda.core.getArgumentType
 import io.onixlabs.corda.core.toTypedClass
 import net.corda.core.contracts.ContractState
@@ -27,7 +26,7 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.LedgerTransaction
 
 /**
- * Represents the base class for implementing singular contract state resolvers.
+ * Represents the base class for implementing singular (one-to-one) contract state resolvers.
  *
  * @param T The underlying [ContractState] type.
  * @property contractStateType The contract state class to resolve.

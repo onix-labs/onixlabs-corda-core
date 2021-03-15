@@ -21,7 +21,7 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 >
 >   🔐 **CORDAPP SIGNING**
 >
->   As of version 1.0.0, this API has been signed with the ONIXLabs production signing key. Historically, clones of this repository would have failed to build, since the signing key is a secret. Version 2.0.0 ships with the ONIXLabs developer key, allowing this repository to be cloned, built and tested locally.
+>   As of version 1.0.0, packaged releases of this API has been signed with the ONIXLabs production signing key. Historically, clones of this repository would have failed to build, since the ONIXLabs production signing key is a secret. Version 2.0.0 ships with the ONIXLabs developer key, allowing this repository to be cloned, built and tested locally.
 
 ---
 
@@ -31,15 +31,29 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 
 **Package:** io.onixlabs.corda.core
 
-Represents a reference to an underlying type.
+Represents a type reference which obtains full generic type information for the underlying generic type.
 
 ```kotlin
 abstract class TypeReference<T> : Comparable<TypeReference<T>>
 ```
 
-#### Remarks
+>   🔵  **INFORMATION**
+>
+>   This implementation is inspired by the `TypeReference<T>` class in [fasterxml, jackson-core](https://fasterxml.github.io/jackson-core/javadoc/2.8/com/fasterxml/jackson/core/type/TypeReference.html).
 
-This generic abstract class is derived from the `TypeReference<T>` class is jackson fasterxml.
+---
+
+### typeReference _Function_
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core
+
+Creates a type reference of the reified generic type.
+
+```kotlin
+inline fun <reified T> typeReference(): TypeReference<T>
+```
 
 ---
 

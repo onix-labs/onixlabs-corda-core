@@ -20,12 +20,14 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 /**
- * Represents a reference to an underlying type.
- * This generic abstract class is derived from the TypeReference class is jackson fasterxml.
+ * Represents a type reference which obtains full generic type information for the underlying generic type.
  *
- * @param T The underlying type.
- * @property type The underlying type.
- * @property arguments The generic arguments of the underlying type.
+ * This implementation is inspired by the TypeReference class in fasterxml, jackson-core.
+ * https://fasterxml.github.io/jackson-core/javadoc/2.8/com/fasterxml/jackson/core/type/TypeReference.html
+ *
+ * @param T The underlying type for which to obtain type information.
+ * @property type The actual underlying type.
+ * @property arguments The actual generic argument types of the underlying type.
  */
 abstract class TypeReference<T> : Comparable<TypeReference<T>> {
 

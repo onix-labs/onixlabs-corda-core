@@ -16,6 +16,7 @@
 
 package io.onixlabs.corda.core
 
+import net.corda.core.serialization.CordaSerializable
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -29,6 +30,7 @@ import java.lang.reflect.Type
  * @property type The actual underlying type.
  * @property arguments The actual generic argument types of the underlying type.
  */
+@CordaSerializable
 abstract class TypeReference<T> : Comparable<TypeReference<T>> {
 
     val type: Type get() = getGenericType()

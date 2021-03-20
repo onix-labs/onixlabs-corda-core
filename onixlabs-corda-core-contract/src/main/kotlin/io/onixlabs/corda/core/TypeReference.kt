@@ -45,6 +45,15 @@ abstract class TypeReference<T> : Comparable<TypeReference<T>> {
     }
 
     /**
+     * Creates a [TypeInfo] from this [TypeReference].
+     *
+     * @return Returns a [TypeInfo] from this [TypeReference].
+     */
+    fun toTypeInfo(): TypeInfo<T> {
+        return TypeInfo.fromTypeReference(this)
+    }
+
+    /**
      * Gets the underlying generic type.
      *
      * @return Returns the underlying type [T].

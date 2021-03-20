@@ -38,7 +38,7 @@ import net.corda.core.node.services.vault.Sort
 @StartableByRPC
 @StartableByService
 abstract class FindStatesFlow<T : ContractState> : FlowLogic<List<StateAndRef<T>>>() {
-    protected val contractStateType: Class<T> = javaClass.getArgumentType(0).toTypedClass()
+    protected open val contractStateType: Class<T> get() = javaClass.getArgumentType(0).toTypedClass()
     protected abstract val criteria: QueryCriteria
     protected abstract val pageSpecification: PageSpecification
     protected abstract val sorting: Sort

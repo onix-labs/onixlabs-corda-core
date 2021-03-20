@@ -37,7 +37,7 @@ import net.corda.core.node.services.vault.QueryCriteria
 @StartableByRPC
 @StartableByService
 abstract class FindStateFlow<T> : FlowLogic<StateAndRef<T>?>() where T : ContractState {
-    protected val contractStateType: Class<T> = javaClass.getArgumentType(0).toTypedClass()
+    protected open val contractStateType: Class<T> get() = javaClass.getArgumentType(0).toTypedClass()
     protected abstract val criteria: QueryCriteria
     protected abstract val pageSpecification: PageSpecification
 

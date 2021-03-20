@@ -16,8 +16,8 @@
 
 package io.onixlabs.corda.test
 
-import io.onixlabs.corda.core.TypeReference
 import io.onixlabs.corda.core.toClass
+import io.onixlabs.corda.core.typeReference
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals
@@ -29,7 +29,7 @@ class TypeReferenceTests {
 
         // Arrange
         val expected = Integer::class.java
-        val typeReference = object : TypeReference<Int>() {}
+        val typeReference = typeReference<Int>()
 
         // Act
         val actual = typeReference.type.toClass()
@@ -43,7 +43,7 @@ class TypeReferenceTests {
 
         // Arrange
         val expected = String::class.java
-        val typeReference = object : TypeReference<String>() {}
+        val typeReference = typeReference<String>()
 
         // Act
         val actual = typeReference.type.toClass()
@@ -57,7 +57,7 @@ class TypeReferenceTests {
 
         // Arrange
         val expected = BigDecimal::class.java
-        val typeReference = object : TypeReference<BigDecimal>() {}
+        val typeReference = typeReference<BigDecimal>()
 
         // Act
         val actual = typeReference.type.toClass()
@@ -72,11 +72,11 @@ class TypeReferenceTests {
         // Arrange
         val expected = List::class.java
         val expectedParameter1 = Integer::class.java
-        val typeReference = object : TypeReference<List<Int>>() {}
+        val typeReference = typeReference<List<Int>>()
 
         // Act
         val actual = typeReference.type.toClass()
-        val actualParameter1 = typeReference.arguments[0].toClass()
+        val actualParameter1 = typeReference.arguments.single().toClass()
 
         // Assert
         assertEquals(expected, actual)
@@ -89,11 +89,11 @@ class TypeReferenceTests {
         // Arrange
         val expected = List::class.java
         val expectedParameter1 = String::class.java
-        val typeReference = object : TypeReference<List<String>>() {}
+        val typeReference = typeReference<List<String>>()
 
         // Act
         val actual = typeReference.type.toClass()
-        val actualParameter1 = typeReference.arguments[0].toClass()
+        val actualParameter1 = typeReference.arguments.single().toClass()
 
         // Assert
         assertEquals(expected, actual)
@@ -106,11 +106,11 @@ class TypeReferenceTests {
         // Arrange
         val expected = List::class.java
         val expectedParameter1 = BigDecimal::class.java
-        val typeReference = object : TypeReference<List<BigDecimal>>() {}
+        val typeReference = typeReference<List<BigDecimal>>()
 
         // Act
         val actual = typeReference.type.toClass()
-        val actualParameter1 = typeReference.arguments[0].toClass()
+        val actualParameter1 = typeReference.arguments.single().toClass()
 
         // Assert
         assertEquals(expected, actual)
@@ -124,12 +124,12 @@ class TypeReferenceTests {
         val expected = Map::class.java
         val expectedParameter1 = String::class.java
         val expectedParameter2 = Integer::class.java
-        val typeReference = object : TypeReference<Map<String, Int>>() {}
+        val typeReference = typeReference<Map<String, Int>>()
 
         // Act
         val actual = typeReference.type.toClass()
-        val actualParameter1 = typeReference.arguments[0].toClass()
-        val actualParameter2 = typeReference.arguments[1].toClass()
+        val actualParameter1 = typeReference.arguments.first().toClass()
+        val actualParameter2 = typeReference.arguments.last().toClass()
 
         // Assert
         assertEquals(expected, actual)

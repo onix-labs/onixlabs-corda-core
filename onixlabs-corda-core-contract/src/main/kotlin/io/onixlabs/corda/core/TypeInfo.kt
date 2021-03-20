@@ -23,7 +23,7 @@ import java.lang.reflect.WildcardType
 import java.util.*
 
 /**
- * Represents a type graph which can be obtained from a reified type.
+ * Represents a graph of type information about a generic type.
  *
  * @param T The underlying type of the type being represented.
  * @param typeClass The class of the underlying type.

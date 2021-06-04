@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.core.query
+package io.onixlabs.corda.core.services
 
-import net.corda.core.node.services.vault.*
+import net.corda.core.node.services.vault.CriteriaExpression
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.schemas.StatePersistable
-
-/**
- * The default sorting order.
- */
-val DEFAULT_SORTING: Sort = Sort(emptySet())
-
-/**
- * The default page specification.
- */
-val DEFAULT_PAGE_SPECIFICATION: PageSpecification get() = PageSpecification(DEFAULT_PAGE_NUM, DEFAULT_PAGE_SIZE)
-
-/**
- * The maximum page specification.
- */
-val MAXIMUM_PAGE_SPECIFICATION: PageSpecification get() = PageSpecification(DEFAULT_PAGE_NUM, MAX_PAGE_SIZE)
 
 /**
  * Builds a custom query criteria. This combines all non-null query expressions using logical AND.

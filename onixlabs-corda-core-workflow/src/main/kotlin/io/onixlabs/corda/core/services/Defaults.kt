@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.core
+package io.onixlabs.corda.core.services
+
+import net.corda.core.node.services.vault.*
 
 /**
- * Creates a type reference of the reified generic type.
- *
- * @param T The reified generic type for which to obtain type reference information.
- * @return Returns a [TypeReference] containing the type information of type [T].
+ * The default sorting order.
  */
-inline fun <reified T> typeReference(): TypeReference<T> {
-    return object : TypeReference<T>() {}
-}
+val DEFAULT_SORTING: Sort get() = Sort(emptySet())
+
+/**
+ * The default page specification.
+ */
+val DEFAULT_PAGE_SPECIFICATION: PageSpecification get() = PageSpecification(DEFAULT_PAGE_NUM, DEFAULT_PAGE_SIZE)
+
+/**
+ * The maximum page specification.
+ */
+val MAXIMUM_PAGE_SPECIFICATION: PageSpecification get() = PageSpecification(DEFAULT_PAGE_NUM, MAX_PAGE_SIZE)

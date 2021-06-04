@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.core
+package io.onixlabs.corda.core.services
+
+import net.corda.core.contracts.ContractState
+import net.corda.core.messaging.CordaRPCOps
 
 /**
- * Creates a [TypeInfo] containing the underlying type information for the specified type [T].
+ * Creates a vault service, bound to the specified [ContractState] type.
  *
- * @param T The underlying type from which to obtain type information.
+ * @param T The underlying [ContractState] type to bind the vault service to.
+ * @return Returns a [VaultService] instance bound to the underlying [ContractState] type.
  */
-inline fun <reified T> typeInfo(): TypeInfo<T> {
-    return typeReference<T>().toTypeInfo()
+inline fun <reified T : ContractState> CordaRPCOps.vaultServiceFor(): VaultService<T> {
+    return VaultService.create(this)
 }

@@ -10,66 +10,18 @@ This document serves as the change log for the ONIXLabs Corda Core API.
 
 **This release contains breaking changes from version 1.2.0 and is not backwards compatible.**
 
-This release contains several new APIs and some API changes; including:
-
--   A set of APIs for obtaining underlying generic type information, used within this API and beyond.
--   A model for creating one-to-one and one-to-many state relationships.
--   A query parameter model for improved vault query capability.
--   A reference CorDapp which implements, demonstrates and tests the features of this API.
+-   `FindStateFlow<T>` and `FindStatesFlow<T>` have been removed in favour of using the new vault query service and query DSL.
+-   `Resolvable<T>` has been refactored to allow state resolution of sungular (one-to-one) and plural (one-to-many) contract states (see below).
 
 #### 🔵 INFORMATION
 
 As of version 1.0.0, packaged releases of this API has been signed with the ONIXLabs production signing key. Historically, clones of this repository would have failed to build, since the ONIXLabs production signing key is a secret. Version 2.0.0 ships with the ONIXLabs developer key, allowing this repository to be cloned, built and tested locally.
 
----
-
-### TypeInfo _Class_
-
-**Module:** onixlabs-corda-core-contract
-
-**Package:** io.onixlabs.corda.core
-
-Represents a graph of type information about a generic type.
-
-```kotlin
-class TypeInfo<T> private constructor(val typeClass: Class<T>, val typeArguments: List<TypeInfo<*>>)
-```
+As of version 2.0.0 this project contains test CorDapp modules in order to thoroughly test and exercise the API surface, as opposed to limited tests per module.
 
 ---
 
-### TypeReference _Abstract Class_
-
-**Module:** onixlabs-corda-core-contract
-
-**Package:** io.onixlabs.corda.core
-
-Represents a type reference which obtains full generic type information for the underlying generic type.
-
-```kotlin
-abstract class TypeReference<T> : Comparable<TypeReference<T>>
-```
-
->   🔵  **INFORMATION**
->
->   This implementation is inspired by the `TypeReference<T>` class in [fasterxml, jackson-core](https://fasterxml.github.io/jackson-core/javadoc/2.8/com/fasterxml/jackson/core/type/TypeReference.html).
-
----
-
-### typeReference _Function_
-
-**Module:** onixlabs-corda-core-contract
-
-**Package:** io.onixlabs.corda.core
-
-Creates a type reference of the reified generic type.
-
-```kotlin
-inline fun <reified T> typeReference(): TypeReference<T>
-```
-
----
-
-### getTypeArguments _Extension Function_
+### getArgumentsTypes _Extension Function_
 
 **Module:** onixlabs-corda-core-contract
 
@@ -83,7 +35,7 @@ fun Class<*>.getArgumentTypes(): List<Type>
 
 ---
 
-### getTypeArgument _Extension Function_
+### getArgumentType _Extension Function_
 
 **Module:** onixlabs-corda-core-contract
 
@@ -223,7 +175,7 @@ data class SignatureData(
 
 >   🔵  **INFORMATION**
 >
->   This API exists in version 1.2.0 however in version 2.0.0 the `content` and `signature` properties are public, there they were originally private.
+>   This API exists in version 1.2.0 however in version 2.0.0 the `content` and `signature` properties are public, where they were originally private.
 
 ---
 
@@ -238,327 +190,623 @@ Provides utility for `VerifiedCommandData` implementations, specifying which com
 ```kotlin
 fun <T : VerifiedCommandData> LedgerTransaction.allowCommands(commandClass: Class<T>, vararg allowed: Class<out T>)
 
-inline fun <reified T : VerifiedCommandData> LedgerTransaction.allowCommands(vararg allowed: Class<out T>)
+inline fun <reified T : VerifiedCommandData> LedgerTransaction.allowCommands(vararg allowed: Class<out T>
 ```
 
 ---
 
-### QueryEquatable _Class_
+### QueryDsl _Class_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.workflow
 
-Represents the base class for implementing equatable query parameters.
+Represents a DSL for building vault queries.
+
+```kotlin
+class QueryDsl<T : ContractState> internal constructor(
+    private var queryCriteria: QueryCriteria,
+    private var page: PageSpecification,
+    private var sort: Sort
+)
+```
+
+---
+
+### QueryDslContext _Annotation Class_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Specifies that a function is contextually party of the query DSL.
+
+```kotlin
+@DslMarker
+annotation class QueryDslMarker
+```
+
+---
+
+### VaultAdapter _Abstract Class_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Represents the base class for implementing vault adapters. This uses the adapter design pattern to unify the vault query API between `ServiceHub` and `CordaRPCOps` implementations.
+
+```kotlin
+internal abstract class VaultAdapter<T : ContractState>(
+  protected val contractStateType: Class<T>
+)
+```
+
+---
+
+### VaultAdapterCordaRPCOps _Class_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Represents a vault service adapter implementation for `CordaRPCOps`.
+
+```kotlin
+internal class VaultAdapterCordaRPCOps<T : ContractState>(
+    private val cordaRPCOps: CordaRPCOps,
+    contractStateType: Class<T>
+) : VaultAdapter<T>(contractStateType)
+```
+
+---
+
+### VaultServiceAdapterServiceHub _Class_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Represents a vault service adapter implementation for `ServiceHub`.
+
+```kotlin
+internal class VaultAdapterServiceHub<T : ContractState>(
+    private val serviceHub: ServiceHub,
+    contractStateType: Class<T>
+) : VaultAdapter<T>(contractStateType)
+```
+
+---
+
+### VaultObservable _Class_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Represents an observable vault state.
 
 ```kotlin
 @CordaSerializable
-sealed class QueryEquatable<T>
-```
-
-#### Remarks
-
-Internal implementations of this class are exposed through companion and top-level functions.
-
----
-
-### QueryComparable _Class_
-
-**Module:** onixlabs-corda-core-workflow
-
-**Package:** io.onixlabs.corda.core.query
-
-Represents the base class for implementing comparable query parameters.
-
-```kotlin
-@CordaSerializable
-sealed class QueryComparable<T>
-```
-
-#### Remarks
-
-Internal implementations of this class are exposed through companion and top-level functions.
-
----
-
-### QueryString _Class_
-
-**Module:** onixlabs-corda-core-workflow
-
-**Package:** io.onixlabs.corda.core.query
-
-Represents the base class for implementing string query parameters.
-
-```kotlin
-@CordaSerializable
-sealed class QueryString<T>
-```
-
-#### Remarks
-
-Internal implementations of this class are exposed through companion and top-level functions.
-
----
-
-### equatableEqualTo _Function_
-
-**Module:** onixlabs-corda-core-workflow
-
-**Package:** io.onixlabs.corda.core.query
-
-Creates an "equal to" equatable query.
-
-```kotlin
-fun <T> equatableEqualTo(value: T, ignoreCase: Boolean = false): QueryEquatable<T>
+class VaultObservable<T : ContractState>(
+    val state: TransactionState<T>,
+    val ref: StateRef,
+    val status: Vault.StateStatus,
+    val flowId: UUID?
+)
 ```
 
 ---
 
-### equatableNotEqualTo _Function_
+### VaultSequence _Class_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "not equal to" equatable query.
+Represents a lazily evaluated sequence of vault query results.
 
 ```kotlin
-fun <T> equatableNotEqualTo(value: T, ignoreCase: Boolean = false): QueryEquatable<T>
+class VaultSequence<T : ContractState> internal constructor(
+    private val service: VaultService<T>,
+    private val criteria: QueryCriteria,
+    private val paging: PageSpecification,
+    private val sorting: Sort
+) : Sequence<StateAndRef<T>>
 ```
 
 ---
 
-### comparableEqualTo _Function_
+### VaultService _Class_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates an "equal to" comparable query.
+Represents a service for managing vault querying and tracking.
 
 ```kotlin
-fun <T> comparableEqualTo(value: T, ignoreCase: Boolean = false): QueryComparable<T>
+class VaultService<T : ContractState> private constructor(
+    private val adapter: VaultAdapter<T>,
+    internal val contractStateType: Class<T>
+)
 ```
 
 ---
 
-### comparableNotEqualTo _Function_
+### vaultServiceFor _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "not equal to" comparable query.
+Creates a vault service, bound to the specified `ContractState` type. This allows vault services to be created from either `CordaRPCOps` or `ServiceHub` instances.
 
 ```kotlin
-fun <T> comparableNotEqualTo(value: T, ignoreCase: Boolean = false): QueryComparable<T>
+inline fun <reified T : ContractState> CordaRPCOps.vaultServiceFor(): VaultService<T>
+
+inline fun <reified T : ContractState> ServiceHub.vaultServiceFor(): VaultService<T>
 ```
 
 ---
 
-### greaterThan _Function_
+### vaultQuery _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "greater than" comparable query.
+Creates a `QueryCriteria` using the Query DSL.
 
 ```kotlin
-fun <T> greaterThan(value: T): QueryComparable<T>
+fun <T : ContractState> vaultQuery(
+    contractStateType: Class<T>,
+    stateStatus: Vault.StateStatus,
+    relevancyStatus: Vault.RelevancyStatus,
+    page: PageSpecification,
+    sort: Sort,
+    action: QueryDsl<T>.() -> Unit
+): QueryCriteria
+
+inline fun <reified T : ContractState> vaultQuery(
+    stateStatus: Vault.StateStatus,
+    relevancyStatus: Vault.RelevancyStatus,
+    page: PageSpecification,
+    sort: Sort,
+    noinline action: QueryDsl<T>.() -> Unit
+): QueryCriteria
 ```
 
 ---
 
-### greaterThanOrEqualTo _Function_
+### any _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "greater than or equal to" comparable query.
+Determines whether the sequence contains any elements.
 
 ```kotlin
-fun <T> greaterThanOrEqualTo(value: T): QueryComparable<T>
+fun <T : ContractState> VaultService<T>.any(
+  criteria: QueryCriteria
+): Boolean
+
+fun <T : ContractState> VaultService<T>.any(
+  action: QueryDsl<T>.() -> Unit
+): Boolean
 ```
 
 ---
 
-### lessThan _Function_
+### count _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "less than" comparable query.
+Counts the number of elements in a sequence.
 
 ```kotlin
-fun <T> lessThan(value: T): QueryComparable<T>
+fun <T : ContractState> VaultService<T>.count(
+  criteria: QueryCriteria
+): Int
+
+fun <T : ContractState> VaultService<T>.count(
+  action: QueryDsl<T>.() -> Unit
+): Int
 ```
 
 ---
 
-### lessThanOrEqualTo _Function_
+### filter _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "less than or equal to" comparable query.
+Filters a sequence of elements based on the specified query criteria.
 
 ```kotlin
-fun <T> lessThanOrEqualTo(value: T): QueryComparable<T>
+fun <T : ContractState> VaultService<T>.filter(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): VaultSequence<T>
+
+fun <T : ContractState> VaultService<T>.filter(
+  action: QueryDsl<T>.() -> Unit
+): VaultSequence<T> 
 ```
 
 ---
 
-### between _Function_
+### first _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "between" comparable query.
+Obtains the first element of a sequence.
 
 ```kotlin
-fun <T : Comparable<T>> between(range: ClosedRange<T>): QueryComparable<T>
+fun <T : ContractState> VaultService<T>.first(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): StateAndRef<T>
+
+fun <T : ContractState> VaultService<T>.first(
+  action: QueryDsl<T>.() -> Unit
+): StateAndRef<T>
 ```
 
 ---
 
-### within _Function_
+### firstOrNull _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "within" (or "in") comparable query.
+Obtains the first element of a sequence, or null if no element is found.
 
 ```kotlin
-fun <T : Comparable<T>> within(items: Iterable<T>, ignoreCase: Boolean = false): QueryComparable<T>
+fun <T : ContractState> VaultService<T>.firstOrNull(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): StateAndRef<T>
+
+fun <T : ContractState> VaultService<T>.firstOrNull(
+  action: QueryDsl<T>.() -> Unit
+): StateAndRef<T>
 ```
 
 ---
 
-### notWithin _Function_
+### last _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "not within" (or "not in") comparable query.
+Obtains the last element of a sequence.
 
 ```kotlin
-fun <T : Comparable<T>> notWithin(items: Iterable<T>, ignoreCase: Boolean = false): QueryComparable<T>
+fun <T : ContractState> VaultService<T>.last(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): StateAndRef<T>
+
+fun <T : ContractState> VaultService<T>.last(
+  action: QueryDsl<T>.() -> Unit
+): StateAndRef<T>
 ```
 
 ---
 
-### stringEqualTo _Function_
+### lastOrNull _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates an "equal to" string query.
+Obtains the last element of a sequence, or null if no element is found.
 
 ```kotlin
-fun <T> stringEqualTo(value: T, ignoreCase: Boolean = false): QueryString<T>
+fun <T : ContractState> VaultService<T>.lastOrNull(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): StateAndRef<T>
+
+fun <T : ContractState> VaultService<T>.lastOrNull(
+  action: QueryDsl<T>.() -> Unit
+): StateAndRef<T>
 ```
 
 ---
 
-### stringNotEqualTo _Function_
+### single _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "not equal to" string query.
+Obtains a single, specific element of a sequence.
 
 ```kotlin
-fun <T> stringNotEqualTo(value: T, ignoreCase: Boolean = false): QueryString<T>
+fun <T : ContractState> VaultService<T>.single(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): StateAndRef<T>
+
+fun <T : ContractState> VaultService<T>.single(
+  action: QueryDsl<T>.() -> Unit
+): StateAndRef<T>
 ```
 
 ---
 
-### like _Function_
+### singleOrNull _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "like" string query.
+Obtains a single, specific element of a sequence, or null if no element is found.
 
 ```kotlin
-fun <T> like(value: T, ignoreCase: Boolean = false): QueryString<T>
+fun <T : ContractState> VaultService<T>.singleOrNull(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): StateAndRef<T>
+
+fun <T : ContractState> VaultService<T>.singleOrNull(
+  action: QueryDsl<T>.() -> Unit
+): StateAndRef<T>
 ```
 
 ---
 
-### notLike _Function_
+### toList _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-Creates a "not like" string query.
+Obtains a sequence of elements as a `List`.
 
 ```kotlin
-fun <T> notLike(value: T, ignoreCase: Boolean = false): QueryString<T>
+fun <T : ContractState> VaultService<T>.toList(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): List<StateAndRef<T>>
 ```
 
 ---
 
-### FindStateFlow *Abstract Class*
+### toSet _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-#### Description
-
-Represents the base class for implementing a query that finds a single state.
+Obtains a sequence of elements as a `Set`.
 
 ```kotlin
-abstract class FindStateFlow<T> : FlowLogic<StateAndRef<T>?>() where T : ContractState
+fun <T : ContractState> VaultService<T>.toSet(
+    criteria: QueryCriteria,
+    paging: PageSpecification,
+    sorting: Sort
+): List<StateAndRef<T>>
 ```
-
-#### Remarks
-
-This design pattern enables developers to be more consistent in their approach to performing vault queries, regardless of whether they're being performed from within the node (using `ServiceHub`) or from an RPC client (using `CordaRPCOps`).
-
->   🔴 **WARNING**
->
->   **This API is not backwards compatible!**
->
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
 
 ---
 
-### FindStatesFlow *Abstract Class*
+### subscribe _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
-#### Description
-
-Represents the base class for implementing a query that finds multiple states.
+Subscribes to vault tracking updates.
 
 ```kotlin
-abstract class FindStatesFlow<T> : FlowLogic<List<StateAndRef<T>>>() where T : ContractState
+fun <T : ContractState> VaultService<T>.subscribe(
+    criteria: QueryCriteria = defaultTrackingCriteria,
+    paging: PageSpecification = MAXIMUM_PAGE_SPECIFICATION,
+    sorting: Sort = DEFAULT_SORTING,
+    observer: (VaultObservable<T>) -> Unit
+)
 ```
 
-#### Remarks
+---
 
-This design pattern enables developers to be more consistent in their approach to performing vault queries, regardless of whether they're being performed from within the node (using `ServiceHub`) or from an RPC client (using `CordaRPCOps`).
+### isNull _Extension Function_
 
->   🔴 **WARNING**
->
->   **This API is not backwards compatible!**
->
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with null value.
+
+```kotlin
+fun <T : StatePersistable, P> KProperty1<T, P?>.isNull(): QueryCriteria
+```
+
+---
+
+### isNotNull _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a non-null value.
+
+```kotlin
+fun <T : StatePersistable, P> KProperty1<T, P?>.isNotNull(): QueryCriteria
+```
+
+---
+
+### equalTo _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value equal to the specified value.
+
+```kotlin
+infix fun <T : StatePersistable, P> KProperty1<T, P?>.equalTo(value: P): QueryCriteria
+```
+
+---
+
+### notEqualTo _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value not equal to the specified value.
+
+```kotlin
+infix fun <T : StatePersistable, P> KProperty1<T, P?>.notEqualTo(value: P): QueryCriteria
+```
+
+---
+
+### greaterThan _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value greater than to the specified value.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterThan(value: P): QueryCriteria
+```
+
+---
+
+### greaterThanOrEqualTo _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value greater than or equal to to the specified value.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterThanOrEqualTo(value: P): QueryCriteria
+```
+
+---
+
+### lessThan _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value less than to the specified value.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThan(value: P): QueryCriteria
+```
+
+---
+
+### lessThanOrEqualTo _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value less than or equal to to the specified value.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThanOrEqualTo(value: P): QueryCriteria
+```
+
+---
+
+### between _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value between the specified minimum and maximum values.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.between(range: ClosedRange<P>): QueryCriteria
+```
+
+---
+
+### like _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value like the specified value.
+
+```kotlin
+infix fun <T : StatePersistable> KProperty1<T, String?>.like(value: String): QueryCriteria
+```
+
+---
+
+### notLike _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value not like the specified value.
+
+```kotlin
+infix fun <T : StatePersistable> KProperty1<T, String?>.notLike(value: String): QueryCriteria
+```
+
+---
+
+### within _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value within the specified collection.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.within(value: Collection<P>): QueryCriteria
+```
+
+---
+
+### notWithin _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.services
+
+Builds a query criterion for a property with a value not within the specified collection.
+
+```kotlin
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.notWithin(value: Collection<P>): QueryCriteria
+```
 
 ---
 
@@ -566,7 +814,7 @@ This design pattern enables developers to be more consistent in their approach t
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
 #### Description
 
@@ -580,7 +828,7 @@ val DEFAULT_SORTING: Sort
 >
 >   **This API is not backwards compatible!**
 >
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
+>   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.services`.
 
 ---
 
@@ -588,7 +836,7 @@ val DEFAULT_SORTING: Sort
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
 #### Description
 
@@ -602,7 +850,7 @@ val DEFAULT_PAGE_SPECIFICATION: PageSpecification
 >
 >   **This API is not backwards compatible!**
 >
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
+>   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.services`.
 
 ---
 
@@ -610,7 +858,7 @@ val DEFAULT_PAGE_SPECIFICATION: PageSpecification
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
 #### Description
 
@@ -624,7 +872,7 @@ val MAXIMUM_PAGE_SPECIFICATION: PageSpecification
 >
 >   **This API is not backwards compatible!**
 >
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
+>   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.services`.
 
 ---
 
@@ -632,7 +880,7 @@ val MAXIMUM_PAGE_SPECIFICATION: PageSpecification
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
 #### Description
 
@@ -648,7 +896,7 @@ fun <T : StatePersistable> QueryCriteria.VaultQueryCriteria.andWithExpressions(
 >
 >   **This API is not backwards compatible!**
 >
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
+>   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.services`.
 
 ---
 
@@ -656,7 +904,7 @@ fun <T : StatePersistable> QueryCriteria.VaultQueryCriteria.andWithExpressions(
 
 **Module:** onixlabs-corda-core-workflow
 
-**Package:** io.onixlabs.corda.core.query
+**Package:** io.onixlabs.corda.core.services
 
 #### Description
 
@@ -672,7 +920,7 @@ fun <T : StatePersistable> QueryCriteria.VaultQueryCriteria.andWithExpressions(
 >
 >   **This API is not backwards compatible!**
 >
->   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.query`.
+>   This API exists in version 1.0.0 however in version 2.0.0 it has moved from `io.onixlabs.corda.core.workflow` to `io.onixlabs.corda.core.services`.
 
 ---
 

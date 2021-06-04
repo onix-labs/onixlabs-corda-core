@@ -20,11 +20,11 @@ import io.onixlabs.corda.core.contract.AbstractPluralResolvable
 import io.onixlabs.corda.core.contract.ChainState
 import io.onixlabs.corda.core.contract.Hashable
 import io.onixlabs.corda.core.contract.PluralResolvable
+import io.onixlabs.corda.core.services.equalTo
+import io.onixlabs.corda.core.services.vaultQuery
 import net.corda.core.contracts.*
 import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.AbstractParty
-import net.corda.core.node.services.Vault
-import net.corda.core.node.services.vault.Builder.equal
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
@@ -69,15 +69,11 @@ data class Customer(
 
     private class RewardResolver(private val customer: Customer) : AbstractPluralResolvable<Reward>() {
 
-        override val criteria: QueryCriteria = QueryCriteria.VaultQueryCriteria(
-            contractStateTypes = setOf(Reward::class.java),
-            status = Vault.StateStatus.UNCONSUMED,
-            relevancyStatus = Vault.RelevancyStatus.RELEVANT
-        ).andWithExpressions(
-            RewardEntity::owner.equal(customer.owner),
-            RewardEntity::customerLinearId.equal(customer.linearId.id),
-            RewardEntity::customerExternalId.equal(customer.linearId.externalId)
-        )
+        override val criteria: QueryCriteria = vaultQuery<Reward> {
+            where(RewardEntity::owner equalTo customer.owner)
+            where(RewardEntity::customerLinearId equalTo customer.linearId.id)
+            where(RewardEntity::customerExternalId equalTo  customer.linearId.externalId)
+        }
 
         override fun isPointingTo(stateAndRef: StateAndRef<Reward>): Boolean = with(stateAndRef.state) {
             data.customerLinearId == customer.linearId && data.owner == customer.owner

@@ -18,6 +18,7 @@ package io.onixlabs.corda.test.contract
 
 import io.onixlabs.corda.core.contract.AbstractSingularResolvable
 import io.onixlabs.corda.core.contract.SingularResolvable
+import io.onixlabs.corda.core.services.vaultQuery
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.UniqueIdentifier
@@ -58,12 +59,9 @@ data class Reward(
 
     private class CustomerResolver(private val reward: Reward) : AbstractSingularResolvable<Customer>() {
 
-        override val criteria: QueryCriteria = QueryCriteria.LinearStateQueryCriteria(
-            contractStateTypes = setOf(Customer::class.java),
-            status = Vault.StateStatus.UNCONSUMED,
-            relevancyStatus = Vault.RelevancyStatus.ALL,
-            linearId = listOf(reward.customerLinearId)
-        )
+        override val criteria: QueryCriteria = vaultQuery<Customer>(relevancyStatus = Vault.RelevancyStatus.ALL) {
+            linearIds(reward.customerLinearId)
+        }
 
         override fun isPointingTo(stateAndRef: StateAndRef<Customer>): Boolean {
             return stateAndRef.state.data.linearId == reward.customerLinearId

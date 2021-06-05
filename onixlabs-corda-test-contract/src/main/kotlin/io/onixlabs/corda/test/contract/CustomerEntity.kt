@@ -49,7 +49,7 @@ class CustomerEntity(
 
     /**
      * Since chain state previous state references should start at null,
-     * including this in the schema allows queries for all new/unevolved states.
+     * including this in the schema allows queries for all new/un-evolved states.
      */
     @Column(name = "previous_state_ref")
     val previousStateRef: String? = null,

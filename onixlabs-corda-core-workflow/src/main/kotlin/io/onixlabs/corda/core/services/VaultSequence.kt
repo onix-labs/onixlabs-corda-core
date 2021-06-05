@@ -38,13 +38,19 @@ class VaultSequence<T : ContractState> internal constructor(
     private val sorting: Sort = DEFAULT_SORTING
 ) : Sequence<StateAndRef<T>> {
 
-    internal constructor(service: VaultService<T>, queryDsl: QueryDsl<T>)
-            : this(service, queryDsl.criteria, queryDsl.paging, queryDsl.sorting)
+    internal constructor(service: VaultService<T>, queryDsl: QueryDsl<T>) : this(
+        service = service,
+        criteria = queryDsl.criteria,
+        paging = queryDsl.paging,
+        sorting = queryDsl.sorting
+    )
 
     /**
      * Gets the iterator which will evaluate the vault query.
      *
      * @return Returns an iterator for the [StateAndRef] instances returned by the vault query.
      */
-    override fun iterator(): Iterator<StateAndRef<T>> = service.queryBy(criteria, paging, sorting).states.iterator()
+    override fun iterator(): Iterator<StateAndRef<T>> {
+        return service.queryBy(criteria, paging, sorting).states.iterator()
+    }
 }

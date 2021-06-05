@@ -21,8 +21,10 @@ import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.DataFeed
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.Vault
-import net.corda.core.node.services.vault.*
+import net.corda.core.node.services.vault.PageSpecification
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
+import net.corda.core.node.services.vault.Sort
 
 /**
  * Represents a service for managing vault querying and tracking.
@@ -107,7 +109,9 @@ class VaultService<T : ContractState> private constructor(
         criteria: QueryCriteria = defaultQueryCriteria,
         paging: PageSpecification = DEFAULT_PAGE_SPECIFICATION,
         sorting: Sort = DEFAULT_SORTING
-    ): Vault.Page<T> = adapter.queryBy(criteria, paging, sorting)
+    ): Vault.Page<T> {
+        return adapter.queryBy(criteria, paging, sorting)
+    }
 
     /**
      * Tracks changes in the vault given the specified criteria, paging and sorting.
@@ -121,5 +125,7 @@ class VaultService<T : ContractState> private constructor(
         criteria: QueryCriteria = defaultTrackingCriteria,
         paging: PageSpecification = DEFAULT_PAGE_SPECIFICATION,
         sorting: Sort = DEFAULT_SORTING
-    ): DataFeed<Vault.Page<T>, Vault.Update<T>> = adapter.trackBy(criteria, paging, sorting)
+    ): DataFeed<Vault.Page<T>, Vault.Update<T>> {
+        return adapter.trackBy(criteria, paging, sorting)
+    }
 }

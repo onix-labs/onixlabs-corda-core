@@ -16,6 +16,7 @@
 
 package io.onixlabs.corda.core.services
 
+import io.onixlabs.corda.core.toTypedClass
 import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.StateRef
 import net.corda.core.contracts.UniqueIdentifier
@@ -28,6 +29,7 @@ import net.corda.core.node.services.vault.Sort
 import net.corda.core.node.services.vault.SortAttribute
 import net.corda.core.schemas.StatePersistable
 import kotlin.reflect.KProperty1
+import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmErasure
 
 /**
@@ -299,10 +301,11 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param direction The sort direction of the sorted data.
      */
     @QueryDslContext
-    @Suppress("UNCHECKED_CAST")
     fun sortBy(property: KProperty1<out StatePersistable, *>, direction: Sort.Direction) {
-        val receiver = property.parameters.first().type.jvmErasure.java as Class<out StatePersistable>
-        sort(Sort(setOf(Sort.SortColumn(SortAttribute.Custom(receiver, property.name), direction))))
+        val receiver = property.parameters.first().type.javaType.toTypedClass<StatePersistable>()
+        val attribute = SortAttribute.Custom(receiver, property.name)
+        val column = Sort.SortColumn(attribute, direction)
+        sort(Sort(setOf(column)))
     }
 
     /**

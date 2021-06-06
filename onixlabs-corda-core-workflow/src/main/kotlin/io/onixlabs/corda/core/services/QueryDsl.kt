@@ -352,7 +352,7 @@ class QueryDsl<T : ContractState> internal constructor(
      * Copies properties of the root criteria to any sub-criteria.
      */
     private fun QueryCriteria.withRootCriteria(): QueryCriteria {
-        return if(queryCriteria is CommonQueryCriteria) {
+        return if (queryCriteria is CommonQueryCriteria) {
             when (this) {
                 is VaultQueryCriteria -> copy(
                     contractStateTypes = vaultCriteria.contractStateTypes,

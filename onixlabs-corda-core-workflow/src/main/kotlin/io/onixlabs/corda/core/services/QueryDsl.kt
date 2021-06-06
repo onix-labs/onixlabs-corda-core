@@ -30,7 +30,6 @@ import net.corda.core.node.services.vault.SortAttribute
 import net.corda.core.schemas.StatePersistable
 import kotlin.reflect.KProperty1
 import kotlin.reflect.jvm.javaType
-import kotlin.reflect.jvm.jvmErasure
 
 /**
  * Represents a DSL for building vault queries.
@@ -48,6 +47,7 @@ class QueryDsl<T : ContractState> internal constructor(
     val criteria: QueryCriteria get() = queryCriteria
     val paging: PageSpecification get() = page
     val sorting: Sort get() = sort
+    private val vaultCriteria: VaultQueryCriteria get() = queryCriteria as VaultQueryCriteria
 
     /**
      * Specifies the state status of the query.
@@ -55,8 +55,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param status The status of the [ContractState] instances to apply to the query.
      */
     @QueryDslContext
-    fun status(status: Vault.StateStatus) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withStatus(status)
+    fun stateStatus(status: Vault.StateStatus) {
+        queryCriteria = vaultCriteria.withStatus(status)
     }
 
     /**
@@ -66,7 +66,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun contractStateTypes(contractStateTypes: Set<Class<out T>>) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withContractStateTypes(contractStateTypes)
+        queryCriteria = vaultCriteria.withContractStateTypes(contractStateTypes)
     }
 
     /**
@@ -86,7 +86,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun stateRefs(stateRefs: List<StateRef>) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withStateRefs(stateRefs)
+        queryCriteria = vaultCriteria.withStateRefs(stateRefs)
     }
 
     /**
@@ -106,7 +106,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun notaries(notaries: List<AbstractParty>) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withNotary(notaries)
+        queryCriteria = vaultCriteria.withNotary(notaries)
     }
 
     /**
@@ -126,7 +126,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun softLockingCondition(softLockingCondition: SoftLockingCondition) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withSoftLockingCondition(softLockingCondition)
+        queryCriteria = vaultCriteria.withSoftLockingCondition(softLockingCondition)
     }
 
     /**
@@ -136,7 +136,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun timeCondition(timeCondition: TimeCondition) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withTimeCondition(timeCondition)
+        queryCriteria = vaultCriteria.withTimeCondition(timeCondition)
     }
 
     /**
@@ -146,7 +146,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun relevancyStatus(relevancyStatus: Vault.RelevancyStatus) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withRelevancyStatus(relevancyStatus)
+        queryCriteria = vaultCriteria.withRelevancyStatus(relevancyStatus)
     }
 
     /**
@@ -156,7 +156,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun constraintTypes(constraintTypes: Set<Vault.ConstraintInfo.Type>) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withConstraintTypes(constraintTypes)
+        queryCriteria = vaultCriteria.withConstraintTypes(constraintTypes)
     }
 
     /**
@@ -176,7 +176,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun constraints(constraints: Set<Vault.ConstraintInfo>) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withConstraints(constraints)
+        queryCriteria = vaultCriteria.withConstraints(constraints)
     }
 
     /**
@@ -196,7 +196,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun participants(participants: List<AbstractParty>) {
-        queryCriteria = (queryCriteria as VaultQueryCriteria).withParticipants(participants)
+        queryCriteria = vaultCriteria.withParticipants(participants)
     }
 
     /**
@@ -216,7 +216,7 @@ class QueryDsl<T : ContractState> internal constructor(
      */
     @QueryDslContext
     fun linearIds(linearIds: List<UniqueIdentifier>) {
-        queryCriteria = queryCriteria.and(LinearStateQueryCriteria(linearId = linearIds))
+        queryCriteria = queryCriteria.and(LinearStateQueryCriteria(linearId = linearIds).withRootCriteria())
     }
 
     /**
@@ -230,13 +230,33 @@ class QueryDsl<T : ContractState> internal constructor(
     }
 
     /**
+     * Specifies the external identifiers to apply to the query criteria.
+     *
+     * @param externalIds The [String] instances to apply to the query criteria.
+     */
+    @QueryDslContext
+    fun externalIds(externalIds: List<String?>) {
+        queryCriteria = queryCriteria.and(LinearStateQueryCriteria(externalId = externalIds.filterNotNull()))
+    }
+
+    /**
+     * Specifies the external identifiers to apply to the query criteria.
+     *
+     * @param externalIds The [String] instances to apply to the query criteria.
+     */
+    @QueryDslContext
+    fun externalIds(vararg externalIds: String?) {
+        externalIds(externalIds.toList())
+    }
+
+    /**
      * Specifies custom query criteria to apply to the parent query criteria.
      *
      * @param criteria The custom criteria to apply to the parent query criteria.
      */
     @QueryDslContext
     fun where(criteria: QueryCriteria) {
-        queryCriteria = queryCriteria.and(criteria)
+        queryCriteria = queryCriteria.and(criteria.withRootCriteria())
     }
 
     /**
@@ -248,7 +268,7 @@ class QueryDsl<T : ContractState> internal constructor(
     fun and(action: QueryDsl<T>.() -> Unit) {
         val queryDsl = QueryDsl<T>()
         action(queryDsl)
-        queryCriteria = queryCriteria.and(queryDsl.criteria)
+        queryCriteria = queryCriteria.and(queryDsl.criteria.withRootCriteria())
     }
 
     /**
@@ -260,7 +280,7 @@ class QueryDsl<T : ContractState> internal constructor(
     fun or(action: QueryDsl<T>.() -> Unit) {
         val queryDsl = QueryDsl<T>()
         action(queryDsl)
-        queryCriteria = queryCriteria.or(queryDsl.criteria)
+        queryCriteria = queryCriteria.or(queryDsl.criteria.withRootCriteria())
     }
 
     /**
@@ -326,5 +346,27 @@ class QueryDsl<T : ContractState> internal constructor(
     @QueryDslContext
     fun sortByDescending(property: KProperty1<out StatePersistable, *>) {
         sortBy(property, Sort.Direction.DESC)
+    }
+
+    /**
+     * Copies properties of the root criteria to any sub-criteria.
+     */
+    private fun QueryCriteria.withRootCriteria(): QueryCriteria = when (this) {
+        is VaultQueryCriteria -> copy(
+            contractStateTypes = vaultCriteria.contractStateTypes,
+            relevancyStatus = vaultCriteria.relevancyStatus,
+            status = vaultCriteria.status
+        )
+        is LinearStateQueryCriteria -> copy(
+            contractStateTypes = vaultCriteria.contractStateTypes,
+            relevancyStatus = vaultCriteria.relevancyStatus,
+            status = vaultCriteria.status
+        )
+        is VaultCustomQueryCriteria<*> -> copy(
+            contractStateTypes = vaultCriteria.contractStateTypes,
+            relevancyStatus = vaultCriteria.relevancyStatus,
+            status = vaultCriteria.status
+        )
+        else -> this
     }
 }

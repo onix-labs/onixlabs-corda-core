@@ -23,8 +23,19 @@ import net.corda.core.messaging.CordaRPCOps
  * Creates a vault service, bound to the specified [ContractState] type.
  *
  * @param T The underlying [ContractState] type to bind the vault service to.
+ * @param contractStateType The [Class] of the [ContractState] type to bind the vault service to.
+ * @return Returns a [VaultService] instance bound to the underlying [ContractState] type.
+ */
+fun <T : ContractState> CordaRPCOps.vaultServiceFor(contractStateType: Class<T>): VaultService<T> {
+    return VaultService.create(this, contractStateType)
+}
+
+/**
+ * Creates a vault service, bound to the specified [ContractState] type.
+ *
+ * @param T The underlying [ContractState] type to bind the vault service to.
  * @return Returns a [VaultService] instance bound to the underlying [ContractState] type.
  */
 inline fun <reified T : ContractState> CordaRPCOps.vaultServiceFor(): VaultService<T> {
-    return VaultService.create(this)
+    return vaultServiceFor(T::class.java)
 }

@@ -33,6 +33,7 @@ import net.corda.core.node.services.vault.Sort
  * @param sort The sorting which will be applied to the query.
  * @return Returns the [QueryCriteria] that was created using the Query DSL.
  */
+@QueryDslContext
 fun <T : ContractState> vaultQuery(
     contractStateType: Class<T>,
     stateStatus: Vault.StateStatus = Vault.StateStatus.UNCONSUMED,
@@ -60,6 +61,7 @@ fun <T : ContractState> vaultQuery(
  * @param sort The sorting which will be applied to the query.
  * @return Returns the [QueryCriteria] that was created using the Query DSL.
  */
+@QueryDslContext
 inline fun <reified T : ContractState> vaultQuery(
     stateStatus: Vault.StateStatus = Vault.StateStatus.UNCONSUMED,
     relevancyStatus: Vault.RelevancyStatus = Vault.RelevancyStatus.RELEVANT,

@@ -44,10 +44,10 @@ class VaultService<T : ContractState> private constructor(
          * Creates a vault service from a [CordaRPCOps] instance.
          *
          * @param cordaRPCOps The [CordaRPCOps] instance from which to create a [VaultService] instance.
-         * @param contractStateClass The [Class] of the [ContractState] type to bind the vault service to.
+         * @param contractStateType The [Class] of the [ContractState] type to bind the vault service to.
          */
-        fun <T : ContractState> create(cordaRPCOps: CordaRPCOps, contractStateClass: Class<T>): VaultService<T> {
-            return VaultService(VaultAdapterCordaRPCOps(cordaRPCOps, contractStateClass), contractStateClass)
+        fun <T : ContractState> create(cordaRPCOps: CordaRPCOps, contractStateType: Class<T>): VaultService<T> {
+            return VaultService(VaultAdapterCordaRPCOps(cordaRPCOps, contractStateType), contractStateType)
         }
 
         /**
@@ -64,10 +64,10 @@ class VaultService<T : ContractState> private constructor(
          * Creates a vault service from a [ServiceHub] instance.
          *
          * @param serviceHub The [ServiceHub] instance from which to create a [VaultService] instance.
-         * @param contractStateClass The [Class] of the [ContractState] type to bind the vault service to.
+         * @param contractStateType The [Class] of the [ContractState] type to bind the vault service to.
          */
-        fun <T : ContractState> create(serviceHub: ServiceHub, contractStateClass: Class<T>): VaultService<T> {
-            return VaultService(VaultAdapterServiceHub(serviceHub, contractStateClass), contractStateClass)
+        fun <T : ContractState> create(serviceHub: ServiceHub, contractStateType: Class<T>): VaultService<T> {
+            return VaultService(VaultAdapterServiceHub(serviceHub, contractStateType), contractStateType)
         }
 
         /**

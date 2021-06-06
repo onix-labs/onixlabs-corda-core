@@ -351,22 +351,26 @@ class QueryDsl<T : ContractState> internal constructor(
     /**
      * Copies properties of the root criteria to any sub-criteria.
      */
-    private fun QueryCriteria.withRootCriteria(): QueryCriteria = when (this) {
-        is VaultQueryCriteria -> copy(
-            contractStateTypes = vaultCriteria.contractStateTypes,
-            relevancyStatus = vaultCriteria.relevancyStatus,
-            status = vaultCriteria.status
-        )
-        is LinearStateQueryCriteria -> copy(
-            contractStateTypes = vaultCriteria.contractStateTypes,
-            relevancyStatus = vaultCriteria.relevancyStatus,
-            status = vaultCriteria.status
-        )
-        is VaultCustomQueryCriteria<*> -> copy(
-            contractStateTypes = vaultCriteria.contractStateTypes,
-            relevancyStatus = vaultCriteria.relevancyStatus,
-            status = vaultCriteria.status
-        )
-        else -> this
+    private fun QueryCriteria.withRootCriteria(): QueryCriteria {
+        return if(queryCriteria is CommonQueryCriteria) {
+            when (this) {
+                is VaultQueryCriteria -> copy(
+                    contractStateTypes = vaultCriteria.contractStateTypes,
+                    relevancyStatus = vaultCriteria.relevancyStatus,
+                    status = vaultCriteria.status
+                )
+                is LinearStateQueryCriteria -> copy(
+                    contractStateTypes = vaultCriteria.contractStateTypes,
+                    relevancyStatus = vaultCriteria.relevancyStatus,
+                    status = vaultCriteria.status
+                )
+                is VaultCustomQueryCriteria<*> -> copy(
+                    contractStateTypes = vaultCriteria.contractStateTypes,
+                    relevancyStatus = vaultCriteria.relevancyStatus,
+                    status = vaultCriteria.status
+                )
+                else -> this
+            }
+        } else this
     }
 }

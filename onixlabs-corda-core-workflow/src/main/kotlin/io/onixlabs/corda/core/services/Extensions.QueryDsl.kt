@@ -17,59 +17,31 @@
 package io.onixlabs.corda.core.services
 
 import net.corda.core.contracts.ContractState
-import net.corda.core.node.services.Vault
-import net.corda.core.node.services.vault.PageSpecification
 import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.node.services.vault.Sort
+import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria
 
 /**
  * Creates a [QueryCriteria] using the Query DSL.
  *
  * @param T The underlying [ContractState] which will be included in the query.
  * @param contractStateType The [ContractState] class which will be included in the query.
- * @param stateStatus The state status which will be applied to the query.
- * @param relevancyStatus The relevancy status which will be applied to the query.
- * @param page The page specification which will be applied to the query.
- * @param sort The sorting which will be applied to the query.
  * @return Returns the [QueryCriteria] that was created using the Query DSL.
  */
 @QueryDslContext
-fun <T : ContractState> vaultQuery(
-    contractStateType: Class<T>,
-    stateStatus: Vault.StateStatus = Vault.StateStatus.UNCONSUMED,
-    relevancyStatus: Vault.RelevancyStatus = Vault.RelevancyStatus.RELEVANT,
-    page: PageSpecification = MAXIMUM_PAGE_SPECIFICATION,
-    sort: Sort = DEFAULT_SORTING,
-    action: QueryDsl<T>.() -> Unit
-): QueryCriteria {
-    val criteria = QueryCriteria.VaultQueryCriteria(
-        contractStateTypes = setOf(contractStateType),
-        status = stateStatus,
-        relevancyStatus = relevancyStatus
-    )
-
-    return vaultQuery(criteria, page, sort, action)
+fun <T : ContractState> vaultQuery(contractStateType: Class<T>, action: QueryDsl<T>.() -> Unit): QueryCriteria {
+    val criteria = VaultQueryCriteria(contractStateTypes = setOf(contractStateType))
+    return vaultQuery(criteria, action)
 }
 
 /**
  * Creates a [QueryCriteria] using the Query DSL.
  *
  * @param T The underlying [ContractState] which will be included in the query.
- * @param stateStatus The state status which will be applied to the query.
- * @param relevancyStatus The relevancy status which will be applied to the query.
- * @param page The page specification which will be applied to the query.
- * @param sort The sorting which will be applied to the query.
  * @return Returns the [QueryCriteria] that was created using the Query DSL.
  */
 @QueryDslContext
-inline fun <reified T : ContractState> vaultQuery(
-    stateStatus: Vault.StateStatus = Vault.StateStatus.UNCONSUMED,
-    relevancyStatus: Vault.RelevancyStatus = Vault.RelevancyStatus.RELEVANT,
-    page: PageSpecification = MAXIMUM_PAGE_SPECIFICATION,
-    sort: Sort = DEFAULT_SORTING,
-    noinline action: QueryDsl<T>.() -> Unit
-): QueryCriteria {
-    return vaultQuery(T::class.java, stateStatus, relevancyStatus, page, sort, action)
+inline fun <reified T : ContractState> vaultQuery(noinline action: QueryDsl<T>.() -> Unit): QueryCriteria {
+    return vaultQuery(T::class.java, action)
 }
 
 /**
@@ -77,17 +49,10 @@ inline fun <reified T : ContractState> vaultQuery(
  *
  * @param T The underlying [ContractState] which will be included in the query.
  * @param criteria The base criteria upon which the Query DSL will build.
- * @param page The page specification which will be applied to the query.
- * @param sort The sorting which will be applied to the query.
  * @return Returns the [QueryCriteria] that was created using the Query DSL.
  */
-private fun <T : ContractState> vaultQuery(
-    criteria: QueryCriteria,
-    page: PageSpecification = MAXIMUM_PAGE_SPECIFICATION,
-    sort: Sort = DEFAULT_SORTING,
-    action: QueryDsl<T>.() -> Unit
-): QueryCriteria {
-    val queryDsl = QueryDsl<T>(criteria, page, sort)
+private fun <T : ContractState> vaultQuery(criteria: QueryCriteria, action: QueryDsl<T>.() -> Unit): QueryCriteria {
+    val queryDsl = QueryDsl<T>(criteria)
     action(queryDsl)
-    return queryDsl.criteria
+    return queryDsl.getQueryCriteria()
 }

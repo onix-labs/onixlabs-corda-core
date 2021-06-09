@@ -31,9 +31,11 @@ import java.util.*
  * @param criteria The query criteria that will be used to obtain the sequence.
  * @return Returns true if the sequence contains any elements; otherwise, false.
  */
-fun <T : ContractState> VaultService<T>.any(criteria: QueryCriteria = defaultQueryCriteria): Boolean {
-    return VaultSequence(this, criteria).any()
-}
+fun <T : ContractState> VaultService<T>.any(
+    criteria: QueryCriteria = defaultQueryCriteria,
+    paging: PageSpecification = MAXIMUM_PAGE_SPECIFICATION,
+    sorting: Sort = DEFAULT_SORTING
+): Boolean = VaultSequence(this, criteria, paging, sorting).any()
 
 /**
  * Determines whether the sequence contains any elements.
@@ -43,7 +45,7 @@ fun <T : ContractState> VaultService<T>.any(criteria: QueryCriteria = defaultQue
  * @return Returns true if the sequence contains any elements; otherwise, false.
  */
 fun <T : ContractState> VaultService<T>.any(action: QueryDsl<T>.() -> Unit): Boolean {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).any()
 }
@@ -55,9 +57,11 @@ fun <T : ContractState> VaultService<T>.any(action: QueryDsl<T>.() -> Unit): Boo
  * @param criteria The query criteria that will be used to obtain the sequence.
  * @return Returns a count of the number of elements in a sequence.
  */
-fun <T : ContractState> VaultService<T>.count(criteria: QueryCriteria = defaultQueryCriteria): Int {
-    return VaultSequence(this, criteria).count()
-}
+fun <T : ContractState> VaultService<T>.count(
+    criteria: QueryCriteria = defaultQueryCriteria,
+    paging: PageSpecification = MAXIMUM_PAGE_SPECIFICATION,
+    sorting: Sort = DEFAULT_SORTING
+): Int = VaultSequence(this, criteria, paging, sorting).count()
 
 /**
  * Counts the number of elements in a sequence.
@@ -67,7 +71,7 @@ fun <T : ContractState> VaultService<T>.count(criteria: QueryCriteria = defaultQ
  * @return Returns a count of the number of elements in a sequence.
  */
 fun <T : ContractState> VaultService<T>.count(action: QueryDsl<T>.() -> Unit): Int {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).count()
 }
@@ -95,7 +99,7 @@ fun <T : ContractState> VaultService<T>.filter(
  * @return Returns a filtered sequence of elements.
  */
 fun <T : ContractState> VaultService<T>.filter(action: QueryDsl<T>.() -> Unit): VaultSequence<T> {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl)
 }
@@ -123,7 +127,7 @@ fun <T : ContractState> VaultService<T>.first(
  * @return Returns the first element in the sequence.
  */
 fun <T : ContractState> VaultService<T>.first(action: QueryDsl<T>.() -> Unit): StateAndRef<T> {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).first()
 }
@@ -151,7 +155,7 @@ fun <T : ContractState> VaultService<T>.firstOrNull(
  * @return Returns the first element in the sequence, or null if no element is found.
  */
 fun <T : ContractState> VaultService<T>.firstOrNull(action: QueryDsl<T>.() -> Unit): StateAndRef<T>? {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).firstOrNull()
 }
@@ -179,7 +183,7 @@ fun <T : ContractState> VaultService<T>.last(
  * @return Returns the last element in the sequence.
  */
 fun <T : ContractState> VaultService<T>.last(action: QueryDsl<T>.() -> Unit): StateAndRef<T> {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).last()
 }
@@ -207,7 +211,7 @@ fun <T : ContractState> VaultService<T>.lastOrNull(
  * @return Returns the last element in the sequence, or null if no element is found.
  */
 fun <T : ContractState> VaultService<T>.lastOrNull(action: QueryDsl<T>.() -> Unit): StateAndRef<T>? {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).lastOrNull()
 }
@@ -235,7 +239,7 @@ fun <T : ContractState> VaultService<T>.single(
  * @return Returns the last element in the sequence.
  */
 fun <T : ContractState> VaultService<T>.single(action: QueryDsl<T>.() -> Unit): StateAndRef<T> {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).single()
 }
@@ -263,7 +267,7 @@ fun <T : ContractState> VaultService<T>.singleOrNull(
  * @return Returns the last element in the sequence, or null if no element is found.
  */
 fun <T : ContractState> VaultService<T>.singleOrNull(action: QueryDsl<T>.() -> Unit): StateAndRef<T>? {
-    val queryDsl = QueryDsl<T>()
+    val queryDsl = QueryDsl<T>(defaultQueryCriteria)
     action(queryDsl)
     return VaultSequence(this, queryDsl).singleOrNull()
 }

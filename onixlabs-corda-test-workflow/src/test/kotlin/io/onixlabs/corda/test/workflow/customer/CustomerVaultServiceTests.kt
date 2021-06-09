@@ -54,7 +54,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::linearId notEqualTo CUSTOMER_1_ID.id)
+                expression(CustomerEntity::linearId notEqualTo CUSTOMER_1_ID.id)
             }.toList()
 
             assertEquals(3, results.count())
@@ -69,7 +69,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::owner equalTo partyA)
+                expression(CustomerEntity::owner equalTo partyA)
             }.toList()
 
             assertEquals(2, results.count())
@@ -83,26 +83,10 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::owner notEqualTo partyA)
+                expression(CustomerEntity::owner notEqualTo partyA)
             }.toList()
 
             assertEquals(2, results.count())
-            assertEquals(1, results.count { it.state.data == CUSTOMER_3 })
-            assertEquals(1, results.count { it.state.data == CUSTOMER_4 })
-        }
-    }
-
-    @Test
-    fun `VaultService equalTo should find all matching customers by previousStateRef`() {
-        listOf(nodeA, nodeB).forEach {
-
-            val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::previousStateRef equalTo null)
-            }.toList()
-
-            assertEquals(4, results.count())
-            assertEquals(1, results.count { it.state.data == CUSTOMER_1 })
-            assertEquals(1, results.count { it.state.data == CUSTOMER_2 })
             assertEquals(1, results.count { it.state.data == CUSTOMER_3 })
             assertEquals(1, results.count { it.state.data == CUSTOMER_4 })
         }
@@ -113,7 +97,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::previousStateRef notEqualTo null)
+                expression(CustomerEntity::previousStateRef notEqualTo null)
             }.toList()
 
             assertEquals(0, results.count())
@@ -125,7 +109,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::firstName equalTo "John")
+                expression(CustomerEntity::firstName equalTo "John")
             }.toList()
 
             assertEquals(1, results.count())
@@ -138,7 +122,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::firstName notEqualTo "John")
+                expression(CustomerEntity::firstName notEqualTo "John")
             }.toList()
 
             assertEquals(3, results.count())
@@ -153,7 +137,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::externalId equalTo CUSTOMER_1_ID.externalId)
+                expression(CustomerEntity::externalId equalTo CUSTOMER_1_ID.externalId)
             }.toList()
 
             assertEquals(1, results.count())
@@ -162,11 +146,11 @@ class CustomerVaultServiceTests : FlowTest() {
     }
 
     @Test
-    fun `VaultService equalTo should find all matching customers by externalId (null)`() {
+    fun `VaultService isNull should find all matching customers by externalId (null)`() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::externalId equalTo null)
+                expression(CustomerEntity::externalId.isNull())
             }.toList()
 
             assertEquals(2, results.count())
@@ -180,7 +164,25 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::externalId notEqualTo CUSTOMER_1_ID.externalId)
+                expression(CustomerEntity::externalId notEqualTo CUSTOMER_1_ID.externalId)
+            }.toList()
+
+            assertEquals(1, results.count())
+            assertEquals(1, results.count { it.state.data == CUSTOMER_2 })
+            //assertEquals(1, results.count { it.state.data == CUSTOMER_3 })
+            //assertEquals(1, results.count { it.state.data == CUSTOMER_4 })
+        }
+    }
+
+    @Test
+    fun `VaultService notEqualTo and isNull should find all matching customers by externalId`() {
+        listOf(nodeA, nodeB).forEach {
+
+            val results = it.services.vaultServiceFor<Customer>().filter {
+                expression(CustomerEntity::externalId notEqualTo CUSTOMER_1_ID.externalId)
+                or {
+                    expression(CustomerEntity::externalId.isNull())
+                }
             }.toList()
 
             assertEquals(3, results.count())
@@ -191,11 +193,11 @@ class CustomerVaultServiceTests : FlowTest() {
     }
 
     @Test
-    fun `VaultService notEqualTo should find all matching customers by externalId (null)`() {
+    fun `VaultService isNotNull should find all matching customers by externalId (null)`() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::externalId notEqualTo null)
+                expression(CustomerEntity::externalId.isNotNull())
             }.toList()
 
             assertEquals(2, results.count())
@@ -209,7 +211,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::previousStateRef.isNull())
+                expression(CustomerEntity::previousStateRef.isNull())
             }.toList()
 
             assertEquals(4, results.count())
@@ -225,7 +227,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::previousStateRef.isNotNull())
+                expression(CustomerEntity::previousStateRef.isNotNull())
             }.toList()
 
             assertEquals(0, results.count())
@@ -237,7 +239,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::firstName like "Ja%")
+                expression(CustomerEntity::firstName like "Ja%")
             }.toList()
 
             assertEquals(2, results.count())
@@ -251,7 +253,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::firstName notLike "Ja%")
+                expression(CustomerEntity::firstName notLike "Ja%")
             }.toList()
 
             assertEquals(2, results.count())
@@ -265,7 +267,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::birthday equalTo CUSTOMER_1_BIRTHDAY)
+                expression(CustomerEntity::birthday equalTo CUSTOMER_1_BIRTHDAY)
             }.toList()
 
             assertEquals(1, results.count())
@@ -278,7 +280,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::birthday notEqualTo CUSTOMER_1_BIRTHDAY)
+                expression(CustomerEntity::birthday notEqualTo CUSTOMER_1_BIRTHDAY)
             }.toList()
 
             assertEquals(3, results.count())
@@ -293,7 +295,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::birthday greaterThan CUSTOMER_2_BIRTHDAY)
+                expression(CustomerEntity::birthday greaterThan CUSTOMER_2_BIRTHDAY)
             }.toList()
 
             assertEquals(2, results.count())
@@ -307,7 +309,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::birthday greaterThanOrEqualTo CUSTOMER_2_BIRTHDAY)
+                expression(CustomerEntity::birthday greaterThanOrEqualTo CUSTOMER_2_BIRTHDAY)
             }.toList()
 
             assertEquals(3, results.count())
@@ -322,7 +324,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::birthday lessThan CUSTOMER_3_BIRTHDAY)
+                expression(CustomerEntity::birthday lessThan CUSTOMER_3_BIRTHDAY)
             }.toList()
 
             assertEquals(2, results.count())
@@ -336,7 +338,7 @@ class CustomerVaultServiceTests : FlowTest() {
         listOf(nodeA, nodeB).forEach {
 
             val results = it.services.vaultServiceFor<Customer>().filter {
-                where(CustomerEntity::birthday lessThanOrEqualTo CUSTOMER_3_BIRTHDAY)
+                expression(CustomerEntity::birthday lessThanOrEqualTo CUSTOMER_3_BIRTHDAY)
             }.toList()
 
             assertEquals(3, results.count())

@@ -70,9 +70,9 @@ data class Customer(
     private class RewardResolver(private val customer: Customer) : AbstractPluralResolvable<Reward>() {
 
         override val criteria: QueryCriteria = vaultQuery<Reward> {
-            where(RewardEntity::owner equalTo customer.owner)
-            where(RewardEntity::customerLinearId equalTo customer.linearId.id)
-            where(RewardEntity::customerExternalId equalTo  customer.linearId.externalId)
+            expression(RewardEntity::owner equalTo customer.owner)
+            expression(RewardEntity::customerLinearId equalTo customer.linearId.id)
+            expression(RewardEntity::customerExternalId equalTo  customer.linearId.externalId)
         }
 
         override fun isPointingTo(stateAndRef: StateAndRef<Reward>): Boolean = with(stateAndRef.state) {

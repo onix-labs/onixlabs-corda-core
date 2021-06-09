@@ -45,7 +45,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService equalTo should find all matching rewards by issuer`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::issuer equalTo partyC)
+            expression(RewardEntity::issuer equalTo partyC)
         }.toList()
 
         assertEquals(6, results.count())
@@ -61,7 +61,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService notEqualTo should find all matching rewards by issuer`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::issuer notEqualTo partyC)
+            expression(RewardEntity::issuer notEqualTo partyC)
         }.toList()
 
         assertEquals(0, results.count())
@@ -71,7 +71,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService equalTo should find all matching rewards by owner`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::owner equalTo partyA)
+            expression(RewardEntity::owner equalTo partyA)
         }.toList()
 
         assertEquals(3, results.count())
@@ -84,7 +84,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService notEqualTo should find all matching rewards by owner`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::owner notEqualTo partyA)
+            expression(RewardEntity::owner notEqualTo partyA)
         }.toList()
 
         assertEquals(3, results.count())
@@ -97,7 +97,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService equalTo should find all matching rewards by points`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::points equalTo 200)
+            expression(RewardEntity::points equalTo 200)
         }.toList()
 
         assertEquals(2, results.count())
@@ -109,7 +109,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService notEqualTo should find all matching rewards by points`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::points notEqualTo 200)
+            expression(RewardEntity::points notEqualTo 200)
         }.toList()
 
         assertEquals(4, results.count())
@@ -123,7 +123,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService greaterThan should find all matching rewards by points`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::points greaterThan 100)
+            expression(RewardEntity::points greaterThan 100)
         }.toList()
 
         assertEquals(4, results.count())
@@ -137,7 +137,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService greaterThanOrEqualTo should find all matching rewards by points`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::points greaterThanOrEqualTo 200)
+            expression(RewardEntity::points greaterThanOrEqualTo 200)
         }.toList()
 
         assertEquals(4, results.count())
@@ -151,7 +151,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService lessThan should find all matching rewards by points`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::points lessThan 200)
+            expression(RewardEntity::points lessThan 200)
         }.toList()
 
         assertEquals(2, results.count())
@@ -163,7 +163,7 @@ class RewardVaultServiceTests : FlowTest() {
     fun `VaultService lessThanOrEqualTo should find all matching rewards by points`() {
 
         val results = nodeC.services.vaultServiceFor<Reward>().filter {
-            where(RewardEntity::points lessThanOrEqualTo 200)
+            expression(RewardEntity::points lessThanOrEqualTo 200)
         }.toList()
 
         assertEquals(4, results.count())

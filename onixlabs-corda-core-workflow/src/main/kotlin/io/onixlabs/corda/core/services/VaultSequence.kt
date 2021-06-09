@@ -40,9 +40,9 @@ class VaultSequence<T : ContractState> internal constructor(
 
     internal constructor(service: VaultService<T>, queryDsl: QueryDsl<T>) : this(
         service = service,
-        criteria = queryDsl.criteria,
-        paging = queryDsl.paging,
-        sorting = queryDsl.sorting
+        criteria = queryDsl.getQueryCriteria(),
+        paging = queryDsl.getPaging(),
+        sorting = queryDsl.getSorting()
     )
 
     /**

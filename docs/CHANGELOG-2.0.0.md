@@ -361,18 +361,10 @@ Creates a `QueryCriteria` using the Query DSL.
 ```kotlin
 fun <T : ContractState> vaultQuery(
     contractStateType: Class<T>,
-    stateStatus: Vault.StateStatus,
-    relevancyStatus: Vault.RelevancyStatus,
-    page: PageSpecification,
-    sort: Sort,
     action: QueryDsl<T>.() -> Unit
 ): QueryCriteria
 
 inline fun <reified T : ContractState> vaultQuery(
-    stateStatus: Vault.StateStatus,
-    relevancyStatus: Vault.RelevancyStatus,
-    page: PageSpecification,
-    sort: Sort,
     noinline action: QueryDsl<T>.() -> Unit
 ): QueryCriteria
 ```
@@ -389,7 +381,9 @@ Determines whether the sequence contains any elements.
 
 ```kotlin
 fun <T : ContractState> VaultService<T>.any(
-  criteria: QueryCriteria
+  criteria: QueryCriteria,
+  paging: PageSpecification,
+  sorting: Sort
 ): Boolean
 
 fun <T : ContractState> VaultService<T>.any(
@@ -409,7 +403,9 @@ Counts the number of elements in a sequence.
 
 ```kotlin
 fun <T : ContractState> VaultService<T>.count(
-  criteria: QueryCriteria
+  criteria: QueryCriteria,
+  paging: PageSpecification,
+  sorting: Sort
 ): Int
 
 fun <T : ContractState> VaultService<T>.count(
@@ -637,7 +633,7 @@ fun <T : ContractState> VaultService<T>.subscribe(
 Builds a query criterion for a property with null value.
 
 ```kotlin
-fun <T : StatePersistable, P> KProperty1<T, P?>.isNull(): QueryCriteria
+fun <T : StatePersistable, P> KProperty1<T, P?>.isNull() : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -651,7 +647,7 @@ fun <T : StatePersistable, P> KProperty1<T, P?>.isNull(): QueryCriteria
 Builds a query criterion for a property with a non-null value.
 
 ```kotlin
-fun <T : StatePersistable, P> KProperty1<T, P?>.isNotNull(): QueryCriteria
+fun <T : StatePersistable, P> KProperty1<T, P?>.isNotNull() : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -665,7 +661,7 @@ fun <T : StatePersistable, P> KProperty1<T, P?>.isNotNull(): QueryCriteria
 Builds a query criterion for a property with a value equal to the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable, P> KProperty1<T, P?>.equalTo(value: P): QueryCriteria
+infix fun <T : StatePersistable, P> KProperty1<T, P?>.equalTo(value: P) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -679,7 +675,7 @@ infix fun <T : StatePersistable, P> KProperty1<T, P?>.equalTo(value: P): QueryCr
 Builds a query criterion for a property with a value not equal to the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable, P> KProperty1<T, P?>.notEqualTo(value: P): QueryCriteria
+infix fun <T : StatePersistable, P> KProperty1<T, P?>.notEqualTo(value: P) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -693,7 +689,7 @@ infix fun <T : StatePersistable, P> KProperty1<T, P?>.notEqualTo(value: P): Quer
 Builds a query criterion for a property with a value greater than to the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterThan(value: P): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterThan(value: P) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -707,7 +703,7 @@ infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterTha
 Builds a query criterion for a property with a value greater than or equal to to the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterThanOrEqualTo(value: P): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterThanOrEqualTo(value: P) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -721,7 +717,7 @@ infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.greaterTha
 Builds a query criterion for a property with a value less than to the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThan(value: P): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThan(value: P) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -735,7 +731,7 @@ infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThan(v
 Builds a query criterion for a property with a value less than or equal to to the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThanOrEqualTo(value: P): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThanOrEqualTo(value: P) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -749,7 +745,7 @@ infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.lessThanOr
 Builds a query criterion for a property with a value between the specified minimum and maximum values.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.between(range: ClosedRange<P>): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.between(range: ClosedRange<P>) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -763,7 +759,7 @@ infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.between(ra
 Builds a query criterion for a property with a value like the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable> KProperty1<T, String?>.like(value: String): QueryCriteria
+infix fun <T : StatePersistable> KProperty1<T, String?>.like(value: String) : ColumnPredicateExpression<T, String>
 ```
 
 ---
@@ -777,7 +773,7 @@ infix fun <T : StatePersistable> KProperty1<T, String?>.like(value: String): Que
 Builds a query criterion for a property with a value not like the specified value.
 
 ```kotlin
-infix fun <T : StatePersistable> KProperty1<T, String?>.notLike(value: String): QueryCriteria
+infix fun <T : StatePersistable> KProperty1<T, String?>.notLike(value: String) : ColumnPredicateExpression<T, String>
 ```
 
 ---
@@ -791,7 +787,7 @@ infix fun <T : StatePersistable> KProperty1<T, String?>.notLike(value: String): 
 Builds a query criterion for a property with a value within the specified collection.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.within(value: Collection<P>): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.within(value: Collection<P>) : ColumnPredicateExpression<T, P>
 ```
 
 ---
@@ -805,7 +801,7 @@ infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.within(val
 Builds a query criterion for a property with a value not within the specified collection.
 
 ```kotlin
-infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.notWithin(value: Collection<P>): QueryCriteria
+infix fun <T : StatePersistable, P : Comparable<P>> KProperty1<T, P?>.notWithin(value: Collection<P>) : ColumnPredicateExpression<T, P>
 ```
 
 ---

@@ -1,0 +1,31 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="ONIXLabs" id="create-onixlabs_reward_states">
+        <createTable tableName="onixlabs_reward_states">
+            <column name="output_index" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_id" type="nvarchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="issuer" type="nvarchar(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="owner" type="nvarchar(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="points" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_linear_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="customer_external_id" type="nvarchar(256)"/>
+        </createTable>
+        <addPrimaryKey columnNames="output_index, transaction_id"
+                       constraintName="PK_onixlabs_reward_states"
+                       tableName="onixlabs_reward_states"/>
+    </changeSet>
+</databaseChangeLog>

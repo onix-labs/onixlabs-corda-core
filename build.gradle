@@ -30,7 +30,6 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
         maven { url "$corda_artifactory_url/corda-releases" }
         maven { url "$corda_artifactory_url/corda-dependencies" }
     }
@@ -48,7 +47,6 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
         maven { url "https://jitpack.io" }
         maven { url "$corda_artifactory_url/corda-releases" }
         maven { url "$corda_artifactory_url/corda-dependencies" }

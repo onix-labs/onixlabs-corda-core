@@ -94,7 +94,7 @@ abstract class FlowTest {
                     "io.onixlabs.corda.test.workflow"
                 ),
                 networkParameters = testNetworkParameters(
-                    minimumPlatformVersion = 8
+                    minimumPlatformVersion = 10
                 )
             )
         )

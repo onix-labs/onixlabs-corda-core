@@ -34,7 +34,7 @@ object InitializeFlowStep : Step("Initializing flow.")
 object BuildTransactionStep : Step("Building transaction.")
 
 /**
- * Represents a progress tracker step indicating that a transaction is is being verified.
+ * Represents a progress tracker step indicating that a transaction is being verified.
  */
 object VerifyTransactionStep : Step("Verifying transaction.")
 

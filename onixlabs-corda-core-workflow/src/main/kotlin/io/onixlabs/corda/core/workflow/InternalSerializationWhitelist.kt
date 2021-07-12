@@ -16,15 +16,12 @@
 
 package io.onixlabs.corda.core.workflow
 
-import net.corda.core.serialization.CordaSerializable
-import java.util.*
+import net.corda.core.node.StatesToRecord
+import net.corda.core.serialization.SerializationWhitelist
 
 /**
- * Represents a transient message.
- *
- * @param T The underlying type of the data object to be transmitted.
- * @property data The data object to transmit.
- * @property id The identity of the message.
+ * Represents an internal list of classes to be whitelisted for serialization.
  */
-@CordaSerializable
-open class Message<T : Any>(val data: T, val id: UUID = UUID.randomUUID())
+internal class InternalSerializationWhitelist : SerializationWhitelist {
+    override val whitelist: List<Class<*>> = listOf(StatesToRecord::class.java)
+}

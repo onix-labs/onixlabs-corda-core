@@ -52,7 +52,7 @@ abstract class ContractTest {
     @BeforeEach
     private fun setup() {
         val networkParameters = testNetworkParameters(
-            minimumPlatformVersion = 8,
+            minimumPlatformVersion = 10,
             notaries = listOf(NotaryInfo(NOTARY.party, true))
         )
         _services = MockServices(cordapps, IDENTITY_A, networkParameters, IDENTITY_B, IDENTITY_C)

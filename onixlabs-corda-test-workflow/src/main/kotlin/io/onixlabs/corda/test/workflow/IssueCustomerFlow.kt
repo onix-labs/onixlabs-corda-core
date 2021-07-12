@@ -17,32 +17,42 @@
 package io.onixlabs.corda.test.workflow
 
 import co.paralleluniverse.fibers.Suspendable
-import io.onixlabs.corda.core.workflow.firstNotary
-import io.onixlabs.corda.core.workflow.getPreferredNotary
-import io.onixlabs.corda.core.workflow.initiateFlows
+import io.onixlabs.corda.core.workflow.*
 import io.onixlabs.corda.test.contract.Customer
 import io.onixlabs.corda.test.contract.CustomerContract
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
 
 class IssueCustomerFlow(
     private val customer: Customer,
     private val notary: Party,
-    private val sessions: Set<FlowSession> = emptySet()
+    private val sessions: Set<FlowSession> = emptySet(),
+    override val progressTracker: ProgressTracker = tracker()
 ) : FlowLogic<SignedTransaction>() {
+
+    companion object {
+        @JvmStatic
+        fun tracker() = ProgressTracker(
+            BuildTransactionStep,
+            VerifyTransactionStep,
+            SignTransactionStep,
+            SendStatesToRecordStep,
+            FinalizeTransactionStep
+        )
+    }
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val transaction = with(TransactionBuilder(notary)) {
+        val transaction = buildTransaction(notary) {
             addOutputState(customer)
             addCommand(CustomerContract.Issue, customer.owner.owningKey)
         }
 
-        transaction.verify(serviceHub)
-        val signedTransaction = serviceHub.signInitialTransaction(transaction, customer.owner.owningKey)
-        return subFlow(FinalityFlow(signedTransaction, sessions))
+        verifyTransaction(transaction)
+        val signedTransaction = signTransaction(transaction)
+        return finalizeTransaction(signedTransaction, sessions)
     }
 
     @StartableByRPC
@@ -54,14 +64,23 @@ class IssueCustomerFlow(
         private val observers: Set<Party> = emptySet()
     ) : FlowLogic<SignedTransaction>() {
 
+        private companion object {
+            object IssuingCustomerStep : ProgressTracker.Step("Issuing customer.") {
+                override fun childProgressTracker() = tracker()
+            }
+        }
+
+        override val progressTracker = ProgressTracker(IssuingCustomerStep)
+
         @Suspendable
         override fun call(): SignedTransaction {
-            val sessions = initiateFlows(observers)
+            currentStep(IssuingCustomerStep)
             return subFlow(
                 IssueCustomerFlow(
                     customer,
                     notary ?: getPreferredNotary { firstNotary },
-                    sessions
+                    initiateFlows(observers, customer),
+                    IssuingCustomerStep.childProgressTracker()
                 )
             )
         }

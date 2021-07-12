@@ -31,43 +31,52 @@ import net.corda.core.utilities.unwrap
  * Represents a sub-flow that receives a transaction note from the specified counter-party.
  *
  * @param session The flow session with the counter-party who is sending the transaction note.
- * @param persist Determines whether the transaction note should be persisted in the local node's vault.
+ * @param addTransactionNoteToVault Determines whether the transaction note should be added in the local node's vault.
  * @param expectedTransactionId An optional, expected transaction ID which can be checked upon receiving the note.
  * @property progressTracker The progress tracker that will be used to track the progress of communication in this flow.
  */
 class ReceiveTransactionNoteFlow(
     private val session: FlowSession,
-    private val persist: Boolean = true,
+    private val addTransactionNoteToVault: Boolean = true,
     private val expectedTransactionId: SecureHash? = null,
     override val progressTracker: ProgressTracker = tracker()
 ) : FlowLogic<Pair<Party, TransactionNote>>() {
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(RECEIVING, ADDING)
+        fun tracker() = ProgressTracker(ReceivingTransactionNoteStep, AddingTransactionNoteStep)
 
-        private object ADDING : Step("Adding note to transaction.")
-        private object RECEIVING : Step("Receiving transaction note from counter-party.")
+        private object AddingTransactionNoteStep : Step("Adding note to transaction.")
+        private object ReceivingTransactionNoteStep : Step("Receiving transaction note from counter-party.")
     }
 
     @Suspendable
     override fun call(): Pair<Party, TransactionNote> {
-        currentStep(RECEIVING, additionalLogInfo = session.counterparty.toString())
-        val transactionNote = session.receive<TransactionNote>().unwrap { it }
+        val transactionNote = receiveTransactionNoteFromCounterparty()
+        checkExpectedTransactionNote(transactionNote)
+        addTransactionNoteToVault(transactionNote)
+        return session.counterparty to transactionNote
+    }
 
+    @Suspendable
+    private fun receiveTransactionNoteFromCounterparty(): TransactionNote {
+        currentStep(ReceivingTransactionNoteStep, additionalLogInfo = session.counterparty.toString())
+        return session.receive<TransactionNote>().unwrap { it }
+    }
+
+    @Suspendable
+    private fun checkExpectedTransactionNote(transactionNote: TransactionNote) {
         if (expectedTransactionId != null && expectedTransactionId != transactionNote.transactionId) {
-            with("Received an unexpected transaction ID from counter-party: ${session.counterparty}.") {
-                logger.error(this)
-                throw FlowException(this)
-            }
+            throw FlowException("Received an unexpected transaction ID from counter-party: ${session.counterparty}.")
         }
+    }
 
-        if (persist) {
-            currentStep(ADDING, additionalLogInfo = transactionNote.transactionId.toString())
+    @Suspendable
+    private fun addTransactionNoteToVault(transactionNote: TransactionNote) {
+        if (addTransactionNoteToVault) {
+            currentStep(AddingTransactionNoteStep, additionalLogInfo = transactionNote.transactionId.toString())
             serviceHub.vaultService.addNoteToTransaction(transactionNote.transactionId, transactionNote.text)
         }
-
-        return session.counterparty to transactionNote
     }
 
     /**
@@ -79,17 +88,22 @@ class ReceiveTransactionNoteFlow(
     class Receiver(private val session: FlowSession) : FlowLogic<Pair<Party, TransactionNote>>() {
 
         private companion object {
-            object RECEIVING : Step("Receiving transaction note.") {
+            object ReceivingTransactionNoteStep : Step("Receiving transaction note.") {
                 override fun childProgressTracker() = tracker()
             }
         }
 
-        override val progressTracker = ProgressTracker(RECEIVING)
+        override val progressTracker = ProgressTracker(ReceivingTransactionNoteStep)
 
         @Suspendable
         override fun call(): Pair<Party, TransactionNote> {
-            currentStep(RECEIVING)
-            return subFlow(ReceiveTransactionNoteFlow(session, progressTracker = RECEIVING.childProgressTracker()))
+            currentStep(ReceivingTransactionNoteStep)
+            return subFlow(
+                ReceiveTransactionNoteFlow(
+                    session,
+                    progressTracker = ReceivingTransactionNoteStep.childProgressTracker()
+                )
+            )
         }
     }
 }

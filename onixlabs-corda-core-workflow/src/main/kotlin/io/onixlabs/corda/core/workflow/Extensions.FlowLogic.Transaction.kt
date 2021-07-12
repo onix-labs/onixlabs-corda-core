@@ -192,7 +192,7 @@ fun FlowLogic<*>.collectSignaturesHandler(
  * @return Returns a fully signed, finalized and recorded transaction.
  */
 @Suspendable
-fun FlowLogic<*>.finalize(
+fun FlowLogic<*>.finalizeTransaction(
     transaction: SignedTransaction,
     sessions: Iterable<FlowSession>,
     statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT
@@ -211,7 +211,7 @@ fun FlowLogic<*>.finalize(
  * @return Returns a fully signed, finalized and recorded transaction.
  */
 @Suspendable
-fun FlowLogic<*>.finalizeHandler(
+fun FlowLogic<*>.finalizeTransactionHandler(
     session: FlowSession,
     expectedTransactionId: SecureHash? = null,
     statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT

@@ -35,10 +35,11 @@ class IssueCustomerFlow(
     companion object {
         @JvmStatic
         fun tracker() = ProgressTracker(
-            BuildingTransactionStep,
-            VerifyingTransactionStep,
-            SigningTransactionStep,
-            FinalizingTransactionStep
+            BuildTransactionStep,
+            VerifyTransactionStep,
+            SignTransactionStep,
+            SendStatesToRecordStep,
+            FinalizeTransactionStep
         )
     }
 

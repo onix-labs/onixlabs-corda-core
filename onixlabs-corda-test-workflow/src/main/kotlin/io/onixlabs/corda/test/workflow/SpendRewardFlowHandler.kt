@@ -17,10 +17,7 @@
 package io.onixlabs.corda.test.workflow
 
 import co.paralleluniverse.fibers.Suspendable
-import io.onixlabs.corda.core.workflow.RecordingFinalizedTransactionStep
-import io.onixlabs.corda.core.workflow.SigningTransactionStep
-import io.onixlabs.corda.core.workflow.collectSignaturesHandler
-import io.onixlabs.corda.core.workflow.finalizeTransactionHandler
+import io.onixlabs.corda.core.workflow.*
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
@@ -35,7 +32,7 @@ class SpendRewardFlowHandler(
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(SigningTransactionStep, RecordingFinalizedTransactionStep)
+        fun tracker() = ProgressTracker(SignTransactionStep, ReceiveStatesToRecordStep, RecordFinalizedTransactionStep)
     }
 
     @Suspendable

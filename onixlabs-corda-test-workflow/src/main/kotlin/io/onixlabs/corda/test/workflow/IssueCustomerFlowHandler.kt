@@ -17,7 +17,8 @@
 package io.onixlabs.corda.test.workflow
 
 import co.paralleluniverse.fibers.Suspendable
-import io.onixlabs.corda.core.workflow.RecordingFinalizedTransactionStep
+import io.onixlabs.corda.core.workflow.ReceiveStatesToRecordStep
+import io.onixlabs.corda.core.workflow.RecordFinalizedTransactionStep
 import io.onixlabs.corda.core.workflow.currentStep
 import io.onixlabs.corda.core.workflow.finalizeTransactionHandler
 import net.corda.core.flows.FlowLogic
@@ -34,7 +35,7 @@ class IssueCustomerFlowHandler(
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(RecordingFinalizedTransactionStep)
+        fun tracker() = ProgressTracker(ReceiveStatesToRecordStep, RecordFinalizedTransactionStep)
     }
 
     @Suspendable

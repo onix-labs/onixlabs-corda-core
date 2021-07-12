@@ -40,18 +40,19 @@ class SpendRewardFlow(
     companion object {
         @JvmStatic
         fun tracker() = ProgressTracker(
-            InitializingFlowStep,
-            BuildingTransactionStep,
-            VerifyingTransactionStep,
-            SigningTransactionStep,
+            InitializeFlowStep,
+            BuildTransactionStep,
+            VerifyTransactionStep,
+            SignTransactionStep,
             CollectTransactionSignaturesStep,
-            FinalizingTransactionStep
+            SendStatesToRecordStep,
+            FinalizeTransactionStep
         )
     }
 
     @Suspendable
     override fun call(): SignedTransaction {
-        currentStep(InitializingFlowStep)
+        currentStep(InitializeFlowStep)
         val rewardState = reward.state.data
         val customer = rewardState.customer.resolveOrThrow(serviceHub)
         val signature = SignatureData.create(rewardState.hash().bytes, rewardState.owner.owningKey, serviceHub)

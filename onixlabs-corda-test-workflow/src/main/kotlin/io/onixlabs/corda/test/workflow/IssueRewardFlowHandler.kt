@@ -32,7 +32,7 @@ class IssueRewardFlowHandler(
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(SigningTransactionStep, RecordingFinalizedTransactionStep)
+        fun tracker() = ProgressTracker(SignTransactionStep, ReceiveStatesToRecordStep, RecordFinalizedTransactionStep)
     }
 
     @Suspendable

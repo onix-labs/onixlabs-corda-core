@@ -39,18 +39,19 @@ class IssueRewardFlow(
     companion object {
         @JvmStatic
         fun tracker() = ProgressTracker(
-            InitializingFlowStep,
-            BuildingTransactionStep,
-            VerifyingTransactionStep,
-            SigningTransactionStep,
+            InitializeFlowStep,
+            BuildTransactionStep,
+            VerifyTransactionStep,
+            SignTransactionStep,
             CollectTransactionSignaturesStep,
-            FinalizingTransactionStep
+            SendStatesToRecordStep,
+            FinalizeTransactionStep
         )
     }
 
     @Suspendable
     override fun call(): SignedTransaction {
-        currentStep(InitializingFlowStep)
+        currentStep(InitializeFlowStep)
         val customer = reward.customer.resolveOrThrow(serviceHub)
         val signature = SignatureData.create(reward.hash().bytes, reward.issuer.owningKey, serviceHub)
 

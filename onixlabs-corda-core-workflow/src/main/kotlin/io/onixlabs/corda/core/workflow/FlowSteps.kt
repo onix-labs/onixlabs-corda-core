@@ -19,28 +19,29 @@ package io.onixlabs.corda.core.workflow
 import net.corda.core.flows.CollectSignaturesFlow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.SignTransactionFlow
+import net.corda.core.node.StatesToRecord
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.ProgressTracker.Step
 
 /**
  * Represents a progress tracker step indicating that a flow is being initialized.
  */
-object InitializingFlowStep : Step("Initializing flow.")
+object InitializeFlowStep : Step("Initializing flow.")
 
 /**
  * Represents a progress tracker step indicating that a transaction is being built.
  */
-object BuildingTransactionStep : Step("Building transaction.")
+object BuildTransactionStep : Step("Building transaction.")
 
 /**
  * Represents a progress tracker step indicating that a transaction is is being verified.
  */
-object VerifyingTransactionStep : Step("Verifying transaction.")
+object VerifyTransactionStep : Step("Verifying transaction.")
 
 /**
  * Represents a progress tracker step indicating that a transaction is being signed.
  */
-object SigningTransactionStep : Step("Signing transaction.") {
+object SignTransactionStep : Step("Signing transaction.") {
     override fun childProgressTracker(): ProgressTracker = SignTransactionFlow.tracker()
 }
 
@@ -52,13 +53,23 @@ object CollectTransactionSignaturesStep : Step("Collecting counter-party signatu
 }
 
 /**
+ * Represents a progress tracker step indicating that that [StatesToRecord] is being send to a counter-party.
+ */
+object SendStatesToRecordStep : Step("Sending states to record to counter-party.")
+
+/**
+ * Represents a progress tracker step indicating that that [StatesToRecord] is being received from a counter-party.
+ */
+object ReceiveStatesToRecordStep : Step("Receiving states to record from counter-party.")
+
+/**
  * Represents a progress tracker step indicating that a transaction is being finalized and recorded.
  */
-object FinalizingTransactionStep : Step("Finalizing transaction.") {
+object FinalizeTransactionStep : Step("Finalizing transaction.") {
     override fun childProgressTracker(): ProgressTracker = FinalityFlow.tracker()
 }
 
 /**
  * Represents a progress tracker step indicating that a transaction is being recorded.
  */
-object RecordingFinalizedTransactionStep : Step("Recording finalized transaction.")
+object RecordFinalizedTransactionStep : Step("Recording finalized transaction.")

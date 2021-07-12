@@ -20,42 +20,48 @@ import co.paralleluniverse.fibers.Suspendable
 import io.onixlabs.corda.core.contract.SignatureData
 import io.onixlabs.corda.core.contract.owningKeys
 import io.onixlabs.corda.core.contract.resolveOrThrow
-import io.onixlabs.corda.core.workflow.firstNotary
-import io.onixlabs.corda.core.workflow.getPreferredNotary
-import io.onixlabs.corda.core.workflow.initiateFlows
+import io.onixlabs.corda.core.workflow.*
 import io.onixlabs.corda.test.contract.Reward
 import io.onixlabs.corda.test.contract.RewardContract
 import net.corda.core.contracts.hash
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
 
 class IssueRewardFlow(
     private val reward: Reward,
     private val notary: Party,
-    private val sessions: Set<FlowSession> = emptySet()
+    private val sessions: Set<FlowSession> = emptySet(),
+    override val progressTracker: ProgressTracker = tracker()
 ) : FlowLogic<SignedTransaction>() {
+
+    companion object {
+        @JvmStatic
+        fun tracker() = ProgressTracker(
+            BuildingTransactionStep,
+            VerifyingTransactionStep,
+            SigningTransactionStep,
+            CollectTransactionSignaturesStep,
+            FinalizingTransactionStep
+        )
+    }
 
     @Suspendable
     override fun call(): SignedTransaction {
         val customer = reward.customer.resolveOrThrow(serviceHub)
         val signature = SignatureData.create(reward.hash().bytes, reward.issuer.owningKey, serviceHub)
 
-        val transaction = with(TransactionBuilder(notary)) {
+        val transaction = buildTransaction(notary) {
             addOutputState(reward)
             addReferenceState(customer.referenced())
             addCommand(RewardContract.Issue(signature), reward.participants.owningKeys.toList())
         }
 
-        transaction.verify(serviceHub)
-        val partiallySignedTransaction = serviceHub.signInitialTransaction(transaction, reward.issuer.owningKey)
-
-        sessions.forEach { it.send(it.counterparty.owningKey in reward.participants.owningKeys) }
-        val signingSessions = sessions.filter { it.counterparty.owningKey in reward.participants.owningKeys }
-        val fullySignedTransaction = subFlow(CollectSignaturesFlow(partiallySignedTransaction, signingSessions))
-
-        return subFlow(FinalityFlow(fullySignedTransaction, sessions))
+        verifyTransaction(transaction)
+        val partiallySignedTransaction = signTransaction(transaction)
+        val fullySignedTransaction = collectSignatures(partiallySignedTransaction, sessions)
+        return finalizeTransaction(fullySignedTransaction, sessions)
     }
 
     @StartableByRPC
@@ -67,14 +73,23 @@ class IssueRewardFlow(
         private val observers: Set<Party> = emptySet()
     ) : FlowLogic<SignedTransaction>() {
 
+        private companion object {
+            object IssuingRewardStep : ProgressTracker.Step("Issuing reward.") {
+                override fun childProgressTracker() = tracker()
+            }
+        }
+
+        override val progressTracker = ProgressTracker(IssuingRewardStep)
+
         @Suspendable
         override fun call(): SignedTransaction {
-            val sessions = initiateFlows(observers, reward)
+            currentStep(IssuingRewardStep)
             return subFlow(
                 IssueRewardFlow(
                     reward,
                     notary ?: getPreferredNotary { firstNotary },
-                    sessions
+                    initiateFlows(observers, reward),
+                    IssuingRewardStep.childProgressTracker()
                 )
             )
         }

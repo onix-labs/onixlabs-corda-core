@@ -17,33 +17,47 @@
 package io.onixlabs.corda.test.workflow
 
 import co.paralleluniverse.fibers.Suspendable
-import net.corda.core.flows.*
+import io.onixlabs.corda.core.workflow.RecordingFinalizedTransactionStep
+import io.onixlabs.corda.core.workflow.SigningTransactionStep
+import io.onixlabs.corda.core.workflow.collectSignaturesHandler
+import io.onixlabs.corda.core.workflow.finalizeTransactionHandler
+import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.FlowSession
+import net.corda.core.flows.InitiatedBy
 import net.corda.core.node.StatesToRecord
 import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.unwrap
+import net.corda.core.utilities.ProgressTracker
 
-class SpendRewardFlowHandler(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
+class SpendRewardFlowHandler(
+    private val session: FlowSession,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<SignedTransaction>() {
+
+    companion object {
+        @JvmStatic
+        fun tracker() = ProgressTracker(SigningTransactionStep, RecordingFinalizedTransactionStep)
+    }
 
     @Suspendable
     override fun call(): SignedTransaction {
-        return subFlow(ReceiveFinalityFlow(session, statesToRecord = StatesToRecord.ALL_VISIBLE))
+        collectSignaturesHandler(session)
+        return finalizeTransactionHandler(session, statesToRecord = StatesToRecord.ALL_VISIBLE)
     }
 
     @InitiatedBy(SpendRewardFlow.Initiator::class)
     private class Handler(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
 
+        private companion object {
+            object ObservingSpentRewardStep : ProgressTracker.Step("Observing spent reward.") {
+                override fun childProgressTracker() = tracker()
+            }
+        }
+
+        override val progressTracker = ProgressTracker(ObservingSpentRewardStep)
+
         @Suspendable
         override fun call(): SignedTransaction {
-            val isRequiredToSign = session.receive<Boolean>().unwrap { it }
-
-            if (isRequiredToSign) {
-                subFlow(object : SignTransactionFlow(session) {
-                    override fun checkTransaction(stx: SignedTransaction) {
-                    }
-                })
-            }
-
-            return subFlow(IssueRewardFlowHandler(session))
+            return subFlow(SpendRewardFlowHandler(session, ObservingSpentRewardStep.childProgressTracker()))
         }
     }
 }

@@ -17,26 +17,46 @@
 package io.onixlabs.corda.test.workflow
 
 import co.paralleluniverse.fibers.Suspendable
+import io.onixlabs.corda.core.workflow.RecordingFinalizedTransactionStep
+import io.onixlabs.corda.core.workflow.currentStep
+import io.onixlabs.corda.core.workflow.finalizeTransactionHandler
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.FlowSession
 import net.corda.core.flows.InitiatedBy
-import net.corda.core.flows.ReceiveFinalityFlow
 import net.corda.core.node.StatesToRecord
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.utilities.ProgressTracker
 
-class AmendCustomerFlowHandler(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
+class AmendCustomerFlowHandler(
+    private val session: FlowSession,
+    override val progressTracker: ProgressTracker = tracker()
+) : FlowLogic<SignedTransaction>() {
+
+    companion object {
+        @JvmStatic
+        fun tracker() = ProgressTracker(RecordingFinalizedTransactionStep)
+    }
 
     @Suspendable
     override fun call(): SignedTransaction {
-        return subFlow(ReceiveFinalityFlow(session, statesToRecord = StatesToRecord.ALL_VISIBLE))
+        return finalizeTransactionHandler(session, statesToRecord = StatesToRecord.ALL_VISIBLE)
     }
 
     @InitiatedBy(AmendCustomerFlow.Initiator::class)
     private class Handler(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
 
+        private companion object {
+            object ObservingAmendedCustomerStep : ProgressTracker.Step("Observing amended customer.") {
+                override fun childProgressTracker() = tracker()
+            }
+        }
+
+        override val progressTracker = ProgressTracker(ObservingAmendedCustomerStep)
+
         @Suspendable
         override fun call(): SignedTransaction {
-            return subFlow(AmendCustomerFlowHandler(session))
+            currentStep(ObservingAmendedCustomerStep)
+            return subFlow(AmendCustomerFlowHandler(session, ObservingAmendedCustomerStep.childProgressTracker()))
         }
     }
 }

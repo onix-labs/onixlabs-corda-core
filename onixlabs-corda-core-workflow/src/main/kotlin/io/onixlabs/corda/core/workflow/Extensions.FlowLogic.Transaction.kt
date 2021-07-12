@@ -155,8 +155,7 @@ fun FlowLogic<*>.collectSignatures(transaction: SignedTransaction, sessions: Ite
 
     sessions.forEach { it.send(it in signingSessions) }
 
-    return if (signingSessions.isEmpty()) transaction
-    else subFlow(
+    return if (signingSessions.isEmpty()) transaction else subFlow(
         CollectSignaturesFlow(transaction, signingSessions, CollectTransactionSignaturesStep.childProgressTracker())
     )
 }

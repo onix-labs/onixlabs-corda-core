@@ -27,4 +27,4 @@ import java.util.*
  * @property id The identity of the message.
  */
 @CordaSerializable
-open class Message<T>(val data: T, val id: UUID = UUID.randomUUID()) where T : Any
+open class Message<T : Any>(val data: T, val id: UUID = UUID.randomUUID())

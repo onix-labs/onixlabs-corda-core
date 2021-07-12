@@ -70,7 +70,7 @@ This progress tracker step is required when calling the `verifyTransaction` exte
 
 **Package:** io.onixlabs.corda.core.workflow
 
-Represents a progress tracker step indicating that a transaction is is being verified.
+Represents a progress tracker step indicating that a transaction is being verified.
 
 ```kotlin
 object SignTransactionStep : Step

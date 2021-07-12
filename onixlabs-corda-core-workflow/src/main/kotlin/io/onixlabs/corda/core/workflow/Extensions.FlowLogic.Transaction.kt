@@ -20,10 +20,13 @@ import co.paralleluniverse.fibers.Suspendable
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.StateRef
 import net.corda.core.crypto.SecureHash
-import net.corda.core.flows.FlowException
-import net.corda.core.flows.FlowLogic
+import net.corda.core.flows.*
+import net.corda.core.identity.Party
+import net.corda.core.node.StatesToRecord
 import net.corda.core.transactions.SignedTransaction
+import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker.Step
+import net.corda.core.utilities.unwrap
 
 /**
  * Sets the current progress tracker step.
@@ -83,4 +86,179 @@ fun FlowLogic<*>.findTransaction(stateRef: StateRef): SignedTransaction {
 @Suspendable
 fun FlowLogic<*>.findTransaction(stateAndRef: StateAndRef<*>): SignedTransaction {
     return findTransaction(stateAndRef.ref)
+}
+
+/**
+ * Provides a DSL-like transaction builder.
+ * To use this function, [BuildTransactionStep] will need to be evident in your progress tracker.
+ *
+ * @param notary The notary which will be applied to the transaction.
+ * @param action The action which will be used to build the transaction.
+ * @return Returns a [TransactionBuilder] representing the built transaction.
+ */
+@Suspendable
+fun FlowLogic<*>.buildTransaction(notary: Party, action: TransactionBuilder.() -> Unit): TransactionBuilder {
+    currentStep(BuildTransactionStep)
+    val transactionBuilder = TransactionBuilder(notary)
+    action(transactionBuilder)
+    return transactionBuilder
+}
+
+/**
+ * Verifies a transaction.
+ * To use this function, [VerifyTransactionStep] will need to be evident in your progress tracker.
+ *
+ * @param transaction The transaction to verify.
+ */
+@Suspendable
+fun FlowLogic<*>.verifyTransaction(transaction: TransactionBuilder) {
+    currentStep(VerifyTransactionStep)
+    transaction.verify(serviceHub)
+}
+
+/**
+ * Signs a transaction.
+ * To use this function, [SignTransactionStep] will need to be evident in your progress tracker.
+ */
+@Suspendable
+fun FlowLogic<*>.signTransaction(transaction: TransactionBuilder): SignedTransaction {
+    currentStep(SignTransactionStep)
+    val ourSigningKeys = transaction.getOurSigningKeys(serviceHub.keyManagementService)
+    return serviceHub.signInitialTransaction(transaction, ourSigningKeys)
+}
+
+/**
+ * Collects all remaining required signatures from the specified counter-parties.
+ * To use this function, [CollectTransactionSignaturesStep] will need to be evident in your progress tracker.
+ *
+ * Due to the way this function works, it is intended to be paired with [collectSignaturesHandler] in the counter-flow.
+ * This function will filter out all required signing sessions from the sessions provided, and will then notify all
+ * sessions whether they are required to sign or not. For those sessions required to sign, it will collect their signature.
+ *
+ * @param transaction The transaction for which to collect remaining signatures from the specified counter-parties.
+ * @param sessions All flow sessions that have been passed to this flow.
+ * @param additionalSigningAction Allows additional signing actions to be specified. This will be executed after all other activity in this flow.
+ * @return Returns a transaction which should be signed by all required signers.
+ * @throws FlowException if the local node has been passed to this function as a counter-party or in a flow session.
+ */
+@Suspendable
+fun FlowLogic<*>.collectSignatures(
+    transaction: SignedTransaction,
+    sessions: Iterable<FlowSession>,
+    additionalSigningAction: ((SignedTransaction) -> SignedTransaction)? = null
+): SignedTransaction {
+    currentStep(CollectTransactionSignaturesStep)
+    val missingSigningKeys = transaction.getMissingSigners()
+
+    val signingSessions = sessions.filter {
+        if (it.counterparty in serviceHub.myInfo.legalIdentities) {
+            throw FlowException("Do not pass flow sessions for the local node.")
+        }
+
+        it.counterparty.owningKey in missingSigningKeys
+    }
+
+    sessions.forEach { it.send(it in signingSessions) }
+
+    val signedTransaction = if (signingSessions.isEmpty()) transaction else subFlow(
+        CollectSignaturesFlow(transaction, signingSessions, CollectTransactionSignaturesStep.childProgressTracker())
+    )
+
+    return additionalSigningAction?.invoke(signedTransaction) ?: signedTransaction
+}
+
+/**
+ * Signs a transaction.
+ * To use this function, [SignTransactionStep] will need to be evident in your progress tracker.
+ * Due to the way this function works, it is intended to be paired with [collectSignatures] in the initiating flow.
+ *
+ * @param session The flow session of the initiating flow that is requesting a transaction signature.
+ * @param action Allows custom transaction checks to be performed before the transaction is signed.
+ */
+@Suspendable
+fun FlowLogic<*>.collectSignaturesHandler(
+    session: FlowSession,
+    action: (SignedTransaction) -> Unit = {}
+): SignedTransaction? {
+    val isRequiredToSign = session.receive<Boolean>().unwrap { it }
+    return if (isRequiredToSign) {
+        currentStep(SignTransactionStep)
+        subFlow(object : SignTransactionFlow(session, SignTransactionStep.childProgressTracker()) {
+            override fun checkTransaction(stx: SignedTransaction) = action(stx)
+        })
+    } else null
+}
+
+/**
+ * Finalizes a transaction.
+ * To use this function, [SendStatesToRecordStep] and [FinalizeTransactionStep] will need to be evident in your progress tracker.
+ *
+ * This function allows the initiator to specify how counter-parties should record states of the finalized transaction.
+ * For each session of the [statesToRecordBySession] object, the counter-party will receive their [StatesToRecord]
+ * enumeration, unless they have specified an override via the [finalizeTransactionHandler] function. Finally they
+ * will record the finalized transaction.
+ *
+ * @param transaction The transaction to finalize and record.
+ * @param statesToRecordBySession Determines how counter-parties should record states in the transaction.
+ * @param ourStatesToRecord Determines how our node should record states in the transaction.
+ * @return Returns a fully signed, finalized and recorded transaction.
+ */
+@Suspendable
+fun FlowLogic<*>.finalizeTransaction(
+    transaction: SignedTransaction,
+    statesToRecordBySession: StatesToRecordBySession,
+    ourStatesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT
+): SignedTransaction {
+    return statesToRecordBySession.finalizeTransaction(transaction, this, ourStatesToRecord)
+}
+
+/**
+ * Finalizes a transaction.
+ * To use this function, [SendStatesToRecordStep] and [FinalizeTransactionStep] will need to be evident in your progress tracker.
+ *
+ * This function allows the initiator to specify how counter-parties should record states of the finalized transaction.
+ * Each session will record the transaction states according to the [counterpartyStatesToRecord] parameter, unless they
+ * have specified an override via the [finalizeTransactionHandler] function. Finally they will record the finalized transaction.
+ *
+ * @param transaction The transaction to be finalized.
+ * @param sessions The sessions for all counter-parties and observers where this transaction should be recorded.
+ * @param counterpartyStatesToRecord Determines how counter-parties should record states in the transaction.
+ * @param ourStatesToRecord Determines how our node should record states in the transaction.
+ * @return Returns a fully signed, finalized and recorded transaction.
+ */
+@Suspendable
+fun FlowLogic<*>.finalizeTransaction(
+    transaction: SignedTransaction,
+    sessions: Iterable<FlowSession>,
+    counterpartyStatesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT,
+    ourStatesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT
+): SignedTransaction {
+    val statesToRecordBySession = StatesToRecordBySession(sessions, counterpartyStatesToRecord)
+    return finalizeTransaction(transaction, statesToRecordBySession, ourStatesToRecord)
+}
+
+/**
+ * Finalizes a transaction.
+ * To use this function, [ReceiveStatesToRecordStep] and [RecordFinalizedTransactionStep] will need to be evident in your progress tracker.
+ *
+ * This function will first receive the [StatesToRecord] from the initiating node, however this can be overridden using
+ * the [statesToRecord] parameter. Finally the transaction will be received and recorded.
+ *
+ * @param session The flow session of the initiating flow that is requesting the transaction to be finalized.
+ * @param expectedTransactionId The expected transaction ID of the transaction to be recorded.
+ * @param statesToRecord Determines which states from the transaction should be recorded.
+ * @return Returns a fully signed, finalized and recorded transaction.
+ */
+@Suspendable
+fun FlowLogic<*>.finalizeTransactionHandler(
+    session: FlowSession,
+    expectedTransactionId: SecureHash? = null,
+    statesToRecord: StatesToRecord? = null
+): SignedTransaction {
+    currentStep(ReceiveStatesToRecordStep)
+    val receivedStatesToRecord = session.receive<StatesToRecord>().unwrap { it }
+    val ourStatesToRecord = statesToRecord ?: receivedStatesToRecord
+
+    currentStep(RecordFinalizedTransactionStep)
+    return subFlow(ReceiveFinalityFlow(session, expectedTransactionId, ourStatesToRecord))
 }

@@ -29,24 +29,24 @@ import net.corda.core.utilities.ProgressTracker.Step
  * @param session The session with the counter-party who will receive the message acknowledgement.
  * @property progressTracker The progress tracker that will be used to track the progress of communication in this flow.
  */
-class SendMessageAcknowledgementFlow<T>(
+class SendMessageAcknowledgementFlow<T : MessageAcknowledgement>(
     private val acknowledgement: T,
     private val session: FlowSession,
     override val progressTracker: ProgressTracker = tracker()
-) : FlowLogic<Unit>() where T : MessageAcknowledgement {
+) : FlowLogic<Unit>() {
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(SENDING)
+        fun tracker() = ProgressTracker(SendingMessageAcknowledgementStep)
 
         private const val FLOW_VERSION_1 = 1
 
-        private object SENDING : Step("Sending message acknowledgement to counter-party.")
+        private object SendingMessageAcknowledgementStep : Step("Sending message acknowledgement to counter-party.")
     }
 
     @Suspendable
     override fun call() {
-        currentStep(SENDING, additionalLogInfo = session.counterparty.toString())
+        currentStep(SendingMessageAcknowledgementStep, additionalLogInfo = session.counterparty.toString())
         session.send(acknowledgement)
     }
 
@@ -59,24 +59,30 @@ class SendMessageAcknowledgementFlow<T>(
     @StartableByRPC
     @StartableByService
     @InitiatingFlow(version = FLOW_VERSION_1)
-    class Initiator<T>(
+    class Initiator<T : MessageAcknowledgement>(
         private val acknowledgement: T,
         private val counterparty: Party
-    ) : FlowLogic<Unit>() where T : MessageAcknowledgement {
+    ) : FlowLogic<Unit>() {
 
         private companion object {
-            private object SENDING : Step("Sending message acknowledgement.") {
-                override fun childProgressTracker() = tracker()
+            private object SendingMessageAcknowledgementStep : Step("Sending message acknowledgement.") {
+                override fun childProgressTracker(): ProgressTracker = tracker()
             }
         }
 
-        override val progressTracker = ProgressTracker(SENDING)
+        override val progressTracker = ProgressTracker(SendingMessageAcknowledgementStep)
 
         @Suspendable
         override fun call() {
-            currentStep(SENDING)
+            currentStep(SendingMessageAcknowledgementStep)
             val session = initiateFlow(counterparty)
-            subFlow(SendMessageAcknowledgementFlow(acknowledgement, session, SENDING.childProgressTracker()))
+            subFlow(
+                SendMessageAcknowledgementFlow(
+                    acknowledgement,
+                    session,
+                    SendingMessageAcknowledgementStep.childProgressTracker()
+                )
+            )
         }
     }
 }

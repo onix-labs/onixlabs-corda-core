@@ -16,15 +16,10 @@
 
 package io.onixlabs.corda.core.workflow
 
-import net.corda.core.serialization.CordaSerializable
-import java.util.*
+import net.corda.core.node.services.KeyManagementService
+import java.security.PublicKey
 
 /**
- * Represents a transient message.
- *
- * @param T The underlying type of the data object to be transmitted.
- * @property data The data object to transmit.
- * @property id The identity of the message.
+ * Gets our signing keys from the key management service.
  */
-@CordaSerializable
-open class Message<T : Any>(val data: T, val id: UUID = UUID.randomUUID())
+val KeyManagementService.ourKeys: List<PublicKey> get() = filterMyKeys(keys).distinct()

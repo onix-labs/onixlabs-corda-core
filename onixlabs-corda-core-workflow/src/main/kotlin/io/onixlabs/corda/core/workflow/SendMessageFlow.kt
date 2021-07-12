@@ -32,21 +32,21 @@ import net.corda.core.utilities.unwrap
  * @param requestAcknowledgement Specifies whether the counter-parties are required to acknowledge the message.
  * @property progressTracker The progress tracker that will be used to track the progress of communication in this flow.
  */
-class SendMessageFlow<T>(
+class SendMessageFlow<T : Message<*>>(
     private val message: T,
     private val sessions: Set<FlowSession>,
     private val requestAcknowledgement: Boolean = false,
     override val progressTracker: ProgressTracker = tracker()
-) : FlowLogic<Map<Party, MessageAcknowledgement>>() where T : Message<*> {
+) : FlowLogic<Map<Party, MessageAcknowledgement>>() {
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(SENDING, RECEIVING)
+        fun tracker() = ProgressTracker(SendingMessageStep, ReceivingAcknowledgementStep)
 
         private const val FLOW_VERSION_1 = 1
 
-        private object SENDING : Step("Sending message to counter-parties.")
-        private object RECEIVING : Step("Receiving message acknowledgement from counter-party.")
+        private object SendingMessageStep : Step("Sending message to counter-parties.")
+        private object ReceivingAcknowledgementStep : Step("Receiving message acknowledgement from counter-party.")
     }
 
     @Suspendable
@@ -56,25 +56,30 @@ class SendMessageFlow<T>(
 
     @Suspendable
     private fun sendMessage(): Map<Party, MessageAcknowledgement> {
-        currentStep(SENDING, false)
-        sessions.forEach {
-            logger.info("Sending message to counter-party: ${it.counterparty}.")
-            it.send(message)
-        }
-
+        currentStep(SendingMessageStep, false)
+        sessions.forEach(::sendMessageToCounterparty)
         return emptyMap()
     }
 
     @Suspendable
     private fun sendMessageAndReceiveAcknowledgement(): Map<Party, MessageAcknowledgement> {
-        currentStep(SENDING, false)
+        currentStep(SendingMessageStep, false)
         return sessions.map {
-            logger.info("Sending message to counter-party: ${it.counterparty}.")
-            currentStep(RECEIVING, false)
-            logger.info("Receiving message acknowledgement from counter-party: ${it.counterparty}.")
-            val acknowledgement = it.sendAndReceive<MessageAcknowledgement>(message).unwrap { it }
-            it.counterparty to acknowledgement
+            sendMessageToCounterparty(it)
+            receiveAcknowledgementFromCounterparty(it)
         }.toMap()
+    }
+
+    @Suspendable
+    private fun sendMessageToCounterparty(session: FlowSession) {
+        logger.info("Sending message to counter-party: ${session.counterparty}")
+        session.send(message)
+    }
+
+    @Suspendable
+    private fun receiveAcknowledgementFromCounterparty(session: FlowSession): Pair<Party, MessageAcknowledgement> {
+        logger.info("Receiving message acknowledgement from counter-party: ${session.counterparty}.")
+        return subFlow(ReceiveMessageAcknowledgementFlow(session))
     }
 
     /**
@@ -93,18 +98,18 @@ class SendMessageFlow<T>(
     ) : FlowLogic<Map<Party, MessageAcknowledgement>>() where T : Message<*> {
 
         private companion object {
-            object SENDING : Step("Sending message.") {
+            object SendingMessageStep : Step("Sending message.") {
                 override fun childProgressTracker() = tracker()
             }
         }
 
-        override val progressTracker = ProgressTracker(SENDING)
+        override val progressTracker = ProgressTracker(SendingMessageStep)
 
         @Suspendable
         override fun call(): Map<Party, MessageAcknowledgement> {
-            currentStep(SENDING)
+            currentStep(SendingMessageStep)
             val sessions = initiateFlows(counterparties)
-            return subFlow(SendMessageFlow(message, sessions, false, SENDING.childProgressTracker()))
+            return subFlow(SendMessageFlow(message, sessions, false, SendingMessageStep.childProgressTracker()))
         }
     }
 }

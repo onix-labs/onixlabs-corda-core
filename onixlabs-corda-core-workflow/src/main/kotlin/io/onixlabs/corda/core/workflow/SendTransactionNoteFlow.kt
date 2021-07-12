@@ -39,26 +39,38 @@ class SendTransactionNoteFlow(
 
     companion object {
         @JvmStatic
-        fun tracker() = ProgressTracker(ADDING, SENDING)
+        fun tracker() = ProgressTracker(AddingTransactionNoteStep, SendingTransactionNoteStep)
 
         private const val FLOW_VERSION_1 = 1
 
-        private object ADDING : Step("Adding note to transaction.")
-        private object SENDING : Step("Sending transaction note to counter-parties.")
+        private object AddingTransactionNoteStep : Step("Adding note to transaction.")
+        private object SendingTransactionNoteStep : Step("Sending transaction note to counter-parties.")
     }
 
     @Suspendable
     override fun call() {
+        addTransactionNoteToVault()
+        sendTransactionNoteToCounterparties()
+    }
+
+    @Suspendable
+    private fun addTransactionNoteToVault() {
         if (addNoteToTransaction) {
-            currentStep(ADDING, additionalLogInfo = transactionNote.transactionId.toString())
+            currentStep(AddingTransactionNoteStep, additionalLogInfo = transactionNote.transactionId.toString())
             serviceHub.vaultService.addNoteToTransaction(transactionNote.transactionId, transactionNote.text)
         }
+    }
 
-        currentStep(SENDING, false)
-        sessions.forEach {
-            logger.info("Sending transaction note to counter-party: ${it.counterparty}.")
-            it.send(transactionNote)
-        }
+    @Suspendable
+    private fun sendTransactionNoteToCounterparties() {
+        currentStep(SendingTransactionNoteStep, false)
+        sessions.forEach(::sendTransactionNoteToCounterparty)
+    }
+
+    @Suspendable
+    private fun sendTransactionNoteToCounterparty(session: FlowSession) {
+        logger.info("Sending transaction note to counter-party: ${session.counterparty}.")
+        session.send(transactionNote)
     }
 
     /**
@@ -78,23 +90,23 @@ class SendTransactionNoteFlow(
     ) : FlowLogic<Unit>() {
 
         private companion object {
-            object SENDING : Step("Sending transaction note.") {
+            object SendingTransactionNoteStep : Step("Sending transaction note.") {
                 override fun childProgressTracker() = tracker()
             }
         }
 
-        override val progressTracker = ProgressTracker(SENDING)
+        override val progressTracker = ProgressTracker(SendingTransactionNoteStep)
 
         @Suspendable
         override fun call() {
-            currentStep(SENDING)
+            currentStep(SendingTransactionNoteStep)
             val sessions = initiateFlows(counterparties)
             subFlow(
                 SendTransactionNoteFlow(
                     transactionNote,
                     sessions,
                     addNoteToTransaction,
-                    SENDING.childProgressTracker()
+                    SendingTransactionNoteStep.childProgressTracker()
                 )
             )
         }

@@ -142,10 +142,10 @@ fun FlowLogic<*>.signTransaction(transaction: TransactionBuilder): SignedTransac
  * @throws FlowException if the local node has been passed to this function as a counter-party or in a flow session.
  */
 @Suspendable
-fun FlowLogic<*>.collectSignatures(
+inline fun FlowLogic<*>.collectSignatures(
     transaction: SignedTransaction,
     sessions: Iterable<FlowSession>,
-    additionalSigningAction: ((SignedTransaction) -> SignedTransaction)? = null
+    additionalSigningAction: ((SignedTransaction) -> SignedTransaction) = { it }
 ): SignedTransaction {
     currentStep(CollectTransactionSignaturesStep)
     val missingSigningKeys = transaction.getMissingSigners()
@@ -164,7 +164,7 @@ fun FlowLogic<*>.collectSignatures(
         CollectSignaturesFlow(transaction, signingSessions, CollectTransactionSignaturesStep.childProgressTracker())
     )
 
-    return additionalSigningAction?.invoke(signedTransaction) ?: signedTransaction
+    return additionalSigningAction(signedTransaction)
 }
 
 /**

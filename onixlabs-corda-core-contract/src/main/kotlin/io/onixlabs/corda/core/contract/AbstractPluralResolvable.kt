@@ -29,13 +29,13 @@ import net.corda.core.transactions.LedgerTransaction
  * Represents the base class for implementing plural (one-to-many) contract state resolvers.
  *
  * @param T The underlying [ContractState] type.
+ * @property criteria The vault query criteria which will be used to resolve contract states.
  * @property contractStateType The contract state class to resolve.
  */
 abstract class AbstractPluralResolvable<T> : PluralResolvable<T> where T : ContractState {
 
-    @Suppress
-    protected val contractStateType: Class<T> = javaClass.getArgumentType(0).toTypedClass()
     protected abstract val criteria: QueryCriteria
+    protected open val contractStateType: Class<T> get() = javaClass.getArgumentType(0).toTypedClass()
 
     /**
      * Resolves a [ContractState] using a [CordaRPCOps] instance.

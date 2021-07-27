@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.test.contract
+package io.onixlabs.corda.test
 
+import io.onixlabs.corda.test.contract.Customer
+import io.onixlabs.corda.test.contract.Reward
 import net.corda.core.contracts.StateRef
 import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.CordaX500Name

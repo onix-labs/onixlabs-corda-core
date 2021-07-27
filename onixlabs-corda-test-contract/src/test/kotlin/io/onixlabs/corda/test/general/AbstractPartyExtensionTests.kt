@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.test.contract
+package io.onixlabs.corda.test.general
 
 import io.onixlabs.corda.core.contract.owningKeys
 import io.onixlabs.corda.core.contract.participantHash
+import io.onixlabs.corda.test.IDENTITY_A
+import io.onixlabs.corda.test.IDENTITY_B
+import io.onixlabs.corda.test.IDENTITY_C
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

@@ -16,14 +16,12 @@
 
 package io.onixlabs.corda.core.specifications
 
-import net.corda.core.contracts.CommandData
-import java.security.PublicKey
+import net.corda.core.contracts.ContractState
 
 /**
- * Represents a specification that determines whether a command has been signed by the specified signing key.
+ * Represents a specification that determines whether a transaction contains the specified input type.
  *
- * @param signingKey The signing key for which the command should be signed.
- * @param type The command type that should be signed.
+ * @param type The contract state type that must be used as a single input in the transaction.
  */
-class HasCommandSignatureOfType(signingKey: PublicKey, type: Class<out CommandData>) :
-    TransactionFunctionSpecification({ signingKey in commandsOfType(type).flatMap { it.signers } })
+class HasSingleInputOfTypeSpecification(type: Class<out ContractState>) :
+    TransactionFunctionSpecification({ inputsOfType(type).size == 1 })

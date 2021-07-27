@@ -21,7 +21,7 @@ import net.corda.core.contracts.ContractState
 /**
  * Represents a specification that determines whether a transaction contains the specified reference type.
  *
- * @param type The contract state type that must be used as an reference in the transaction.
+ * @param type The contract state type that must be used as a single reference in the transaction.
  */
-class HasReferencesOfTypeTransactionSpecification(type: Class<out ContractState>) :
-    TransactionFunctionSpecification({ referenceInputsOfType(type).isNotEmpty() })
+class HasSingleReferenceOfTypeSpecification(type: Class<out ContractState>) :
+    TransactionFunctionSpecification({ referenceInputsOfType(type).size == 1 })

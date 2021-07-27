@@ -16,13 +16,12 @@
 
 package io.onixlabs.corda.core.specifications
 
-import java.time.Instant
+import java.security.PublicKey
 
 /**
- * Represents a specification that determines whether the specified instant is within the transaction time window.
+ * Represents a specification that determines whether a transaction has been signed by the specified signing key.
  *
- * @param instant The instant to determine is within the transaction time window.
- * @param allowNull Determines whether a null time window should satisfy the transaction.
+ * @param signingKey The signing key for which the transaction should be signed.
  */
-class IsWithinTimeWindowTransactionSpecification(instant: Instant, allowNull: Boolean = false) :
-    TransactionFunctionSpecification({ timeWindow?.contains(instant) ?: allowNull })
+class HasTransactionSignatureSpecification(signingKey: PublicKey) :
+    TransactionFunctionSpecification({ signingKey in commands.flatMap { it.signers } })

@@ -21,7 +21,7 @@ import net.corda.core.contracts.ContractState
 /**
  * Represents a specification that determines whether a transaction contains the specified input type.
  *
- * @param type The contract state type that must be used as a single input in the transaction.
+ * @param type The contract state type that must be used as an input in the transaction.
  */
-class HasSingleInputOfTypeTransactionSpecification(type: Class<out ContractState>) :
-    TransactionFunctionSpecification({ inputsOfType(type).size == 1 })
+class HasInputsOfTypeSpecification(type: Class<out ContractState>) :
+    TransactionFunctionSpecification({ inputsOfType(type).isNotEmpty() })

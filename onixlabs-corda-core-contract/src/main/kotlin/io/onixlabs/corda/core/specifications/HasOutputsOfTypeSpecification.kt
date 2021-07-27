@@ -21,7 +21,7 @@ import net.corda.core.contracts.ContractState
 /**
  * Represents a specification that determines whether a transaction contains the specified output type.
  *
- * @param type The contract state type that must be used as a single output in the transaction.
+ * @param type The contract state type that must be used as an output in the transaction.
  */
-class HasSingleOutputOfTypeTransactionSpecification(type: Class<out ContractState>) :
-    TransactionFunctionSpecification({ outputsOfType(type).size == 1 })
+class HasOutputsOfTypeSpecification(type: Class<out ContractState>) :
+    TransactionFunctionSpecification({ outputsOfType(type).isNotEmpty() })

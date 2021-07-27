@@ -16,12 +16,14 @@
 
 package io.onixlabs.corda.core.specifications
 
-import net.corda.core.contracts.ContractState
+import net.corda.core.contracts.CommandData
+import java.security.PublicKey
 
 /**
- * Represents a specification that determines whether a transaction does not contain the specified output type.
+ * Represents a specification that determines whether a command has been signed by the specified signing key.
  *
- * @param type The contract state type that must not be used as an output in the transaction.
+ * @param signingKey The signing key for which the command should be signed.
+ * @param type The command type that should be signed.
  */
-class HasZeroOutputsOfTypeTransactionSpecification(type: Class<out ContractState>) :
-    TransactionFunctionSpecification({ outputsOfType(type).isEmpty() })
+class HasCommandSignatureSpecification(signingKey: PublicKey, type: Class<out CommandData>) :
+    TransactionFunctionSpecification({ signingKey in commandsOfType(type).flatMap { it.signers } })

@@ -19,9 +19,9 @@ package io.onixlabs.corda.core.specifications
 import net.corda.core.contracts.ContractState
 
 /**
- * Represents a specification that determines whether a transaction contains the specified reference type.
+ * Represents a specification that determines whether a transaction does not contain the specified output type.
  *
- * @param type The contract state type that must be used as a single reference in the transaction.
+ * @param type The contract state type that must not be used as an output in the transaction.
  */
-class HasSingleReferenceOfTypeTransactionSpecification(type: Class<out ContractState>) :
-    TransactionFunctionSpecification({ referenceInputsOfType(type).size == 1 })
+class HasZeroOutputsOfTypeSpecification(type: Class<out ContractState>) :
+    TransactionFunctionSpecification({ outputsOfType(type).isEmpty() })

@@ -34,4 +34,4 @@ val Iterable<AbstractParty>.owningKeys: Set<PublicKey>
  * @return Returns a [SecureHash] representing the participants of the initial [Iterable].
  */
 val Iterable<AbstractParty>.participantHash: SecureHash
-    get() = SecureHash.sha256(map { SecureHash.sha256(it.toString()) }.toSortedSet().joinToString())
+    get() = map { SecureHash.sha256(it.toString()) }.sortAndReduce()

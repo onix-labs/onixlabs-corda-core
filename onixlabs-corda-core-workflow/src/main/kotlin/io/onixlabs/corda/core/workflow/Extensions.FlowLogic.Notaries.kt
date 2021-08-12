@@ -53,7 +53,7 @@ fun FlowLogic<*>.getPreferredNotary(
     defaultSelector: (ServiceHub) -> Party = { firstNotary }
 ): Party {
     val cordappContext: CordappContext = serviceHub.getAppContext()
-    logger.info("Using the specified cordapp for notary selection: ${cordappContext.cordapp.name}")
+    logger.info("Using the specified CorDapp for notary selection: ${cordappContext.cordapp.name}")
     return if (serviceHub.getAppContext().config.exists("notary")) {
         val name = CordaX500Name.parse(serviceHub.getAppContext().config.getString("notary"))
         serviceHub.networkMapCache.getNotary(name) ?: throw IllegalArgumentException(

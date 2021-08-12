@@ -40,8 +40,8 @@ buildscript {
     }
 }
 
-group 'io.onixlabs'
-version '2.1.2'
+group getProperty('group')
+version getProperty('version')
 
 subprojects {
     repositories {
@@ -71,6 +71,11 @@ subprojects {
             jvmTarget = "1.8"
             javaParameters = true
         }
+    }
+
+    task sourceJar(type: Jar) {
+        from sourceSets.main.allSource
+        archiveClassifier = "sources"
     }
 
     jar {

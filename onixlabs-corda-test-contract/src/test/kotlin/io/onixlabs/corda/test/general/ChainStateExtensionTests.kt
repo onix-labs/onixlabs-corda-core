@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.test.contract
+package io.onixlabs.corda.test.general
 
 import io.onixlabs.corda.core.contract.ChainState
 import io.onixlabs.corda.core.contract.isPointingTo
+import io.onixlabs.corda.test.EMPTY_STATE_REF
+import io.onixlabs.corda.test.NOTARY
+import io.onixlabs.corda.test.RANDOM_STATE_REF
+import io.onixlabs.corda.test.contract.Customer
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.TransactionState
 import net.corda.core.crypto.NullKeys.NULL_PARTY

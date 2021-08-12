@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.test.contract
+package io.onixlabs.corda.test.general
 
 import io.onixlabs.corda.core.contract.SignatureData
+import io.onixlabs.corda.test.IDENTITY_A
+import io.onixlabs.corda.test.IDENTITY_B
 import net.corda.core.crypto.SecureHash
 import net.corda.core.crypto.sign
 import org.junit.jupiter.api.Test
@@ -34,7 +36,7 @@ class SignatureDataTests {
         val signatureData = SignatureData(content, signature)
 
         // Act
-        val result = signatureData.verify(IDENTITY_A.publicKey)
+        val result = signatureData.isValid(IDENTITY_A.publicKey)
 
         // Assert
         assertTrue(result)
@@ -49,7 +51,7 @@ class SignatureDataTests {
         val signatureData = SignatureData(content, signature)
 
         // Act
-        val result = signatureData.verify(IDENTITY_B.publicKey)
+        val result = signatureData.isValid(IDENTITY_B.publicKey)
 
         // Assert
         assertFalse(result)

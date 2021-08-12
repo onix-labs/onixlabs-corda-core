@@ -22,6 +22,7 @@ import net.corda.core.crypto.sign
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.KeyManagementService
 import net.corda.core.serialization.CordaSerializable
+import net.corda.core.utilities.toBase58String
 import net.corda.core.utilities.toBase64
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -82,13 +83,25 @@ data class SignatureData(val content: ByteArray, val signature: DigitalSignature
     }
 
     /**
+     * Determines whether the signature data was signed by the specified key.
+     *
+     * @param publicKey The public key to verify against the signature.
+     * @return Returns true if the signature data was signed by the specified key; otherwise, false.
+     */
+    fun isValid(publicKey: PublicKey): Boolean {
+        return Crypto.isValid(publicKey, signature.bytes, content)
+    }
+
+    /**
      * Verifies the signature data using the specified public key.
      *
      * @param publicKey The public key to verify against the signature.
      * @return Returns true if the public key was used to sign the data; otherwise, false.
      */
-    fun verify(publicKey: PublicKey): Boolean {
-        return Crypto.isValid(publicKey, signature.bytes, content)
+    fun verify(publicKey: PublicKey) {
+        if (!isValid(publicKey)) {
+            throw SignatureException("Signature was not signed by the specified key: ${publicKey.toBase58String()}")
+        }
     }
 
     /**

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run Contract Tests" type="JUnit" factoryName="JUnit">
+  <configuration default="false" name="Run Contract Tests" type="JUnit" factoryName="JUnit" folderName="Tests">
     <module name="onixlabs-corda-core.onixlabs-corda-test-contract.test" />
     <option name="PACKAGE_NAME" value="io.onixlabs.corda.test" />
     <option name="MAIN_CLASS_NAME" value="" />

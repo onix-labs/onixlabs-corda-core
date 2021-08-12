@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package io.onixlabs.corda.test.contract
+package io.onixlabs.corda.test.general
 
+import io.onixlabs.corda.test.contract.CustomerContract
+import io.onixlabs.corda.test.contract.RewardContract
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 

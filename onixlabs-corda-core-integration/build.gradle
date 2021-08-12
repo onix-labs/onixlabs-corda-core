@@ -32,6 +32,7 @@ publishing {
             groupId = project.parent.group
             version = project.parent.version
             artifactId = 'onixlabs-corda-core-integration'
+            artifact sourceJar
             from components.java
         }
     }

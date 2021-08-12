@@ -413,13 +413,33 @@ class QueryDsl<T : ContractState> internal constructor(
     /**
      * Applies a sub-query to the current query criteria using logical AND.
      *
+     * @param queryCriteria The sub-query criteria which will be appended to the current query criteria.
+     */
+    @QueryDslContext
+    fun and(queryCriteria: QueryCriteria) {
+        criteria = criteria.and(queryCriteria)
+    }
+
+    /**
+     * Applies a sub-query to the current query criteria using logical AND.
+     *
      * @param action The [QueryDsl] action which will be used to build the sub-query.
      */
     @QueryDslContext
     fun and(action: QueryDsl<T>.() -> Unit) {
         val query = QueryDsl<T>(VaultQueryCriteria().updateQueryCriteria(), paging, sorting)
         action(query)
-        criteria = criteria.and(query.criteria)
+        and(query.criteria)
+    }
+
+    /**
+     * Applies a sub-query to the current query criteria using logical OR.
+     *
+     * @param queryCriteria The sub-query criteria which will be appended to the current query criteria.
+     */
+    @QueryDslContext
+    fun or(queryCriteria: QueryCriteria) {
+        criteria = criteria.or(queryCriteria)
     }
 
     /**
@@ -431,7 +451,7 @@ class QueryDsl<T : ContractState> internal constructor(
     fun or(action: QueryDsl<T>.() -> Unit) {
         val query = QueryDsl<T>(VaultQueryCriteria().updateQueryCriteria(), paging, sorting)
         action(query)
-        criteria = criteria.or(query.criteria)
+        or(query.criteria)
     }
 
     /**

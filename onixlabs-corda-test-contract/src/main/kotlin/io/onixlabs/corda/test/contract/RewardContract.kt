@@ -70,7 +70,7 @@ class RewardContract : Contract {
 
             CONTRACT_RULE_OWNER using (rewardOutput.owner == customerReference.owner)
             CONTRACT_RULE_SIGNATURE_DATA using (rewardOutput.hash().bytes.contentEquals(signature.content))
-            CONTRACT_RULE_SIGNATURE_SIGNER using (signature.verify(rewardOutput.issuer.owningKey))
+            CONTRACT_RULE_SIGNATURE_SIGNER using (signature.isValid(rewardOutput.issuer.owningKey))
             CONTRACT_RULE_SIGNERS using (rewardOutput.participants.owningKeys.all { it in signers })
         }
     }
@@ -114,7 +114,7 @@ class RewardContract : Contract {
 
             CONTRACT_RULE_OWNER using (rewardInput.owner == customerReference.owner)
             CONTRACT_RULE_SIGNATURE_DATA using (rewardInput.hash().bytes.contentEquals(signature.content))
-            CONTRACT_RULE_SIGNATURE_SIGNER using (signature.verify(rewardInput.owner.owningKey))
+            CONTRACT_RULE_SIGNATURE_SIGNER using (signature.isValid(rewardInput.owner.owningKey))
             CONTRACT_RULE_SIGNERS using (rewardInput.participants.owningKeys.all { it in signers })
         }
     }

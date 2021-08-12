@@ -17,21 +17,12 @@
 package io.onixlabs.corda.core.contract
 
 import net.corda.core.crypto.SecureHash
-import net.corda.core.identity.AbstractParty
-import java.security.PublicKey
 
 /**
- * Gets the owning keys from an [Iterable] of [AbstractParty].
+ * Sorts and reduces an [Iterable] of [SecureHash] into a single hash.
  *
- * @return Returns a [Set] of owning keys.
+ * @return Returns a single hash representing the sorted and reduced input hashes.
  */
-val Iterable<AbstractParty>.owningKeys: Set<PublicKey>
-    get() = map { it.owningKey }.toSet()
-
-/**
- * Gets a hash from an [Iterable] of [AbstractParty].
- *
- * @return Returns a [SecureHash] representing the participants of the initial [Iterable].
- */
-val Iterable<AbstractParty>.participantHash: SecureHash
-    get() = map { SecureHash.sha256(it.toString()) }.sortAndReduce()
+fun Iterable<SecureHash>.sortAndReduce(): SecureHash {
+    return sorted().reduce { lhs, rhs -> lhs.concatenate(rhs) }
+}

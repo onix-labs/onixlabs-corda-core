@@ -50,4 +50,3 @@ In this version the property is declared using the `open` modifier, allowing der
 
 ---
 
-### 

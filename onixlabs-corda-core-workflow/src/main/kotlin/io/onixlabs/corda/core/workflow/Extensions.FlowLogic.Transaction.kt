@@ -215,6 +215,7 @@ fun FlowLogic<*>.finalizeTransaction(
 /**
  * Finalizes a transaction.
  * To use this function, [SendStatesToRecordStep] and [FinalizeTransactionStep] will need to be evident in your progress tracker.
+ * If your flow only updates a transaction locally, you can omit [SendStatesToRecordStep] from your progress tracker.
  *
  * This function allows the initiator to specify how counter-parties should record states of the finalized transaction.
  * Each session will record the transaction states according to the [counterpartyStatesToRecord] parameter, unless they
@@ -229,7 +230,7 @@ fun FlowLogic<*>.finalizeTransaction(
 @Suspendable
 fun FlowLogic<*>.finalizeTransaction(
     transaction: SignedTransaction,
-    sessions: Iterable<FlowSession>,
+    sessions: Iterable<FlowSession> = emptyList(),
     counterpartyStatesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT,
     ourStatesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT
 ): SignedTransaction {
@@ -256,9 +257,48 @@ fun FlowLogic<*>.finalizeTransactionHandler(
     statesToRecord: StatesToRecord? = null
 ): SignedTransaction {
     currentStep(ReceiveStatesToRecordStep)
-    val receivedStatesToRecord = session.receive<StatesToRecord>().unwrap { it }
+    val receivedStatesToRecord = session.receive<String>().unwrap { StatesToRecord.valueOf(it) }
     val ourStatesToRecord = statesToRecord ?: receivedStatesToRecord
 
     currentStep(RecordFinalizedTransactionStep)
     return subFlow(ReceiveFinalityFlow(session, expectedTransactionId, ourStatesToRecord))
+}
+
+/**
+ * Publishes a [SignedTransaction] to the specified flow sessions.
+ *
+ * @param transaction The signed transaction to publish.
+ * @param sessions The sessions where the signed transaction should be published.
+ * @param progressTrackerStep The progress tracker step to set before publishing the transaction.
+ * @return Returns the published [SignedTransaction].
+ */
+@Suspendable
+fun FlowLogic<*>.publishTransaction(
+    transaction: SignedTransaction,
+    sessions: Set<FlowSession>,
+    progressTrackerStep: Step = SendTransactionStep
+): SignedTransaction {
+    currentStep(progressTrackerStep)
+    sessions.forEach { subFlow(SendTransactionFlow(it, transaction)) }
+    return transaction
+}
+
+/**
+ * Handles and records a published [SignedTransaction].
+ *
+ * @param session The session where the signed transaction was published from.
+ * @param statesToRecord Determines which states to record from the signed transaction.
+ * @param checkSufficientSignatures Determines whether to check if the signed transaction has been sufficiently signed.
+ * @param progressTrackerStep The progress tracker step to set before recording the published the transaction.
+ * @return Returns the published [SignedTransaction].
+ */
+@Suspendable
+fun FlowLogic<*>.publishTransactionHandler(
+    session: FlowSession,
+    statesToRecord: StatesToRecord = StatesToRecord.ALL_VISIBLE,
+    checkSufficientSignatures: Boolean = true,
+    progressTrackerStep: Step = ReceiveTransactionStep
+): SignedTransaction {
+    currentStep(progressTrackerStep)
+    return subFlow(ReceiveTransactionFlow(session, checkSufficientSignatures, statesToRecord))
 }

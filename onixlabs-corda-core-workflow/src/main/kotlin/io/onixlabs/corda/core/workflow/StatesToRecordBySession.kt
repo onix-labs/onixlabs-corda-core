@@ -47,25 +47,25 @@ class StatesToRecordBySession(statesToRecordBySession: Map<FlowSession, StatesTo
     private val sessions: Set<FlowSession> get() = mutableStatesToRecordBySession.keys
 
     /**
-     * Adds a flow session to the underlying map.
+     * Sets the [StatesToRecord] for the specified [FlowSession].
      * If a flow session already exists in the underlying map, this function will overwrite its [StatesToRecord] value.
      *
      * @param session The session to add to the underlying map.
      * @param statesToRecord The [StatesToRecord] value for the specified flow session.
      */
-    fun addSession(session: FlowSession, statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT) {
+    fun setSessionStatesToRecord(session: FlowSession, statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT) {
         mutableStatesToRecordBySession[session] = statesToRecord
     }
 
     /**
-     * Adds a flow session to the underlying map.
+     * Adds and sets the [StatesToRecord] for the specified [FlowSession].
      * If a flow session already exists in the underlying map, this function will leave its [StatesToRecord] value intact.
      *
      * @param session The session to add to the underlying map.
      * @param statesToRecord The [StatesToRecord] value for the specified flow session.
      */
-    fun addMissingSession(session: FlowSession, statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT) {
-        if (session !in sessions) addSession(session, statesToRecord)
+    fun addSessionStatesToRecord(session: FlowSession, statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT) {
+        if (session !in sessions) setSessionStatesToRecord(session, statesToRecord)
     }
 
     /**
@@ -84,8 +84,10 @@ class StatesToRecordBySession(statesToRecordBySession: Map<FlowSession, StatesTo
         ourStatesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT,
         childProgressTracker: ProgressTracker = FinalizeTransactionStep.childProgressTracker()
     ): SignedTransaction {
-        flowLogic.currentStep(SendStatesToRecordStep)
-        mutableStatesToRecordBySession.forEach { (key, value) -> key.send(value) }
+        if (mutableStatesToRecordBySession.isNotEmpty()) {
+            flowLogic.currentStep(SendStatesToRecordStep)
+            mutableStatesToRecordBySession.forEach { (key, value) -> key.send(value.name) }
+        }
 
         flowLogic.currentStep(FinalizeTransactionStep)
         return flowLogic.subFlow(FinalityFlow(transaction, sessions, ourStatesToRecord, childProgressTracker))

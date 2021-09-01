@@ -73,3 +73,13 @@ object FinalizeTransactionStep : Step("Finalizing transaction.") {
  * Represents a progress tracker step indicating that a transaction is being recorded.
  */
 object RecordFinalizedTransactionStep : Step("Recording finalized transaction.")
+
+/**
+ * Represents a progress tracker step indicating that a signed transaction is being sent.
+ */
+object SendTransactionStep : Step("Sending signed transaction.")
+
+/**
+ * Represents a progress tracker step indicating that a signed transaction is being received.
+ */
+object ReceiveTransactionStep : Step("Receiving signed transaction.")

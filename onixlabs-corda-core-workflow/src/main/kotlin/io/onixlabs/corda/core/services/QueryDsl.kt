@@ -129,8 +129,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [ContractState] types to apply to the query criteria.
      */
     @QueryDslContext
-    fun contractStateTypes(values: Iterable<Class<out T>>) {
-        commonQueryCriteria.contractStateTypes = values.toSet()
+    fun contractStateTypes(values: Iterable<Class<out T>>?) {
+        commonQueryCriteria.contractStateTypes = values?.toSet()
         criteria = criteria.updateQueryCriteria()
     }
 
@@ -150,8 +150,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The exact [AbstractParty] participants to apply to the query.
      */
     @QueryDslContext
-    fun exactParticipants(values: Iterable<AbstractParty>) {
-        commonQueryCriteria.exactParticipants = values.toList()
+    fun exactParticipants(values: Iterable<AbstractParty>?) {
+        commonQueryCriteria.exactParticipants = values?.toList()
         criteria = criteria.updateQueryCriteria()
     }
 
@@ -171,8 +171,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The participant [AbstractParty] instances to apply to the query criteria.
      */
     @QueryDslContext
-    fun participants(values: Iterable<AbstractParty>) {
-        commonQueryCriteria.participants = values.toList()
+    fun participants(values: Iterable<AbstractParty>?) {
+        commonQueryCriteria.participants = values?.toList()
         criteria = criteria.updateQueryCriteria()
     }
 
@@ -225,8 +225,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [String] instances to apply to the query criteria.
      */
     @QueryDslContext
-    fun externalIds(values: Iterable<String?>) {
-        val criteriaToAdd = LinearStateQueryCriteria(externalId = values.filterNotNull())
+    fun externalIds(values: Iterable<String>?) {
+        val criteriaToAdd = LinearStateQueryCriteria(externalId = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -236,7 +236,7 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [String] instances to apply to the query criteria.
      */
     @QueryDslContext
-    fun externalIds(vararg values: String?) {
+    fun externalIds(vararg values: String) {
         externalIds(values.toList())
     }
 
@@ -246,8 +246,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [UniqueIdentifier] instances to apply to the query criteria.
      */
     @QueryDslContext
-    fun linearIds(values: Iterable<UniqueIdentifier>) {
-        val criteriaToAdd = LinearStateQueryCriteria(linearId = values.toList())
+    fun linearIds(values: Iterable<UniqueIdentifier>?) {
+        val criteriaToAdd = LinearStateQueryCriteria(linearId = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -267,8 +267,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [AbstractParty] issuers of [FungibleAsset] states to apply to the query criteria.
      */
     @QueryDslContext
-    fun issuers(values: Iterable<AbstractParty>) {
-        val criteriaToAdd = FungibleAssetQueryCriteria(issuer = values.toList())
+    fun issuers(values: Iterable<AbstractParty>?) {
+        val criteriaToAdd = FungibleAssetQueryCriteria(issuer = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -288,8 +288,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [AbstractParty] issuer refs of [FungibleAsset] states to apply to the query criteria.
      */
     @QueryDslContext
-    fun issuerRefs(values: Iterable<OpaqueBytes>) {
-        val criteriaToAdd = FungibleAssetQueryCriteria(issuerRef = values.toList())
+    fun issuerRefs(values: Iterable<OpaqueBytes>?) {
+        val criteriaToAdd = FungibleAssetQueryCriteria(issuerRef = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -309,8 +309,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The notary [AbstractParty] instances to apply to the query criteria.
      */
     @QueryDslContext
-    fun notaries(values: Iterable<AbstractParty>) {
-        val criteriaToAdd = VaultQueryCriteria(notary = values.toList())
+    fun notaries(values: Iterable<AbstractParty>?) {
+        val criteriaToAdd = VaultQueryCriteria(notary = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -330,8 +330,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [AbstractParty] owners of [FungibleAsset] states to apply to the query criteria.
      */
     @QueryDslContext
-    fun owners(values: Iterable<AbstractParty>) {
-        val criteriaToAdd = FungibleAssetQueryCriteria(owner = values.toList())
+    fun owners(values: Iterable<AbstractParty>?) {
+        val criteriaToAdd = FungibleAssetQueryCriteria(owner = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -351,7 +351,7 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param value The [ColumnPredicate] that determines the quantity of a [FungibleAsset] to apply to the query criteria.
      */
     @QueryDslContext
-    fun fungibleAssetQuantity(value: ColumnPredicate<Long>) {
+    fun fungibleAssetQuantity(value: ColumnPredicate<Long>?) {
         val criteriaToAdd = FungibleAssetQueryCriteria(quantity = value)
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
@@ -362,7 +362,7 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param value The [ColumnPredicate] that determines the quantity of a [FungibleState] to apply to the query criteria.
      */
     @QueryDslContext
-    fun fungibleStateQuantity(value: ColumnPredicate<Long>) {
+    fun fungibleStateQuantity(value: ColumnPredicate<Long>?) {
         val criteriaToAdd = FungibleStateQueryCriteria(quantity = value)
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
@@ -373,7 +373,7 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param value The [SoftLockingCondition] to apply to the query criteria.
      */
     @QueryDslContext
-    fun softLockingCondition(value: SoftLockingCondition) {
+    fun softLockingCondition(value: SoftLockingCondition?) {
         val criteriaToAdd = VaultQueryCriteria(softLockingCondition = value)
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
@@ -384,8 +384,8 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param values The [StateRef] instances to apply to the query criteria.
      */
     @QueryDslContext
-    fun stateRefs(values: Iterable<StateRef>) {
-        val criteriaToAdd = VaultQueryCriteria(stateRefs = values.toList())
+    fun stateRefs(values: Iterable<StateRef>?) {
+        val criteriaToAdd = VaultQueryCriteria(stateRefs = values?.toList())
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }
 
@@ -405,7 +405,7 @@ class QueryDsl<T : ContractState> internal constructor(
      * @param value The [TimeCondition] to apply to the query criteria.
      */
     @QueryDslContext
-    fun timeCondition(value: TimeCondition) {
+    fun timeCondition(value: TimeCondition?) {
         val criteriaToAdd = VaultQueryCriteria(timeCondition = value)
         criteria = criteria.and(criteriaToAdd.updateQueryCriteria())
     }

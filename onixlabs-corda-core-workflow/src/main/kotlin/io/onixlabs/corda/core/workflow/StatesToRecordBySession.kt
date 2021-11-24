@@ -29,6 +29,7 @@ import net.corda.core.utilities.ProgressTracker
  * allowing a transaction initiator to specify how each counter-party should record the states of a transaction.
  *
  * @param statesToRecordBySession A map of [StatesToRecord] by [FlowSession].
+ * @property sessions The flow sessions of the underlying map.
  */
 class StatesToRecordBySession(statesToRecordBySession: Map<FlowSession, StatesToRecord> = emptyMap()) {
 
@@ -43,8 +44,8 @@ class StatesToRecordBySession(statesToRecordBySession: Map<FlowSession, StatesTo
         statesToRecord: StatesToRecord = StatesToRecord.ONLY_RELEVANT
     ) : this(sessions.map { it to statesToRecord }.toMap())
 
+    val sessions: Set<FlowSession> get() = mutableStatesToRecordBySession.keys
     private val mutableStatesToRecordBySession = statesToRecordBySession.toMutableMap()
-    private val sessions: Set<FlowSession> get() = mutableStatesToRecordBySession.keys
 
     /**
      * Sets the [StatesToRecord] for the specified [FlowSession].

@@ -116,6 +116,7 @@ fun FlowLogic<*>.checkSufficientSessions(
  *
  * @param sessions The flow sessions that have been provided to the flow.
  * @param states The states that will be used as input or output states in a transaction.
+ * @param partyProjection Provides a mechanism to project, or resolve anonymous to well-known identities.
  * @throws FlowException if a required counter-party session is missing for a state participant.
  */
 @Suspendable
@@ -129,6 +130,7 @@ fun FlowLogic<*>.checkSufficientSessions(
  *
  * @param sessions The flow sessions that have been provided to the flow.
  * @param transaction The transaction for which to check that sufficient flow sessions exist.
+ * @param partyProjection Provides a mechanism to project, or resolve anonymous to well-known identities.
  * @throws FlowException if a required counter-party session is missing for a state participant.
  */
 @Suspendable

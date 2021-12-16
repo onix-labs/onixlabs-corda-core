@@ -82,26 +82,27 @@ fun FlowLogic<*>.initiateFlows(parties: Iterable<AbstractParty>, vararg states: 
  *
  * @param sessions The flow sessions that have been provided to the flow.
  * @param states The states that will be used as input or output states in a transaction.
- * @param partyProjection Provides a mechanism to project, or resolve anonymous to well-known identities.
+ * @param projectParty Provides a mechanism to project, or resolve anonymous to well-known identities.
  * @throws FlowException if a required counter-party session is missing for a state participant.
  */
 @Suspendable
 fun FlowLogic<*>.checkSufficientSessions(
     sessions: Iterable<FlowSession>,
     states: Iterable<ContractState>,
-    partyProjection: (AbstractParty) -> AbstractParty = { it }
+    projectParty: (AbstractParty) -> AbstractParty = { it }
 ) {
-    val stateCounterparties = states
+    val projectedStateCounterparties = states
         .flatMap { it.participants }
+        .map { projectParty(it) }
         .filter { it !in serviceHub.myInfo.legalIdentities }
         .toSet()
 
-    val sessionCounterparties = sessions
-        .map { it.counterparty }
+    val projectedSessionCounterparties = sessions
+        .map { projectParty(it.counterparty) }
         .toSet()
 
-    stateCounterparties.map { partyProjection(it) }.forEach {
-        if (it !in sessionCounterparties) {
+    projectedStateCounterparties.forEach {
+        if (it !in projectedSessionCounterparties) {
             throw FlowException("A flow session must be provided for the specified counter-party: $it.")
         }
     }
@@ -116,29 +117,30 @@ fun FlowLogic<*>.checkSufficientSessions(
  *
  * @param sessions The flow sessions that have been provided to the flow.
  * @param states The states that will be used as input or output states in a transaction.
- * @param partyProjection Provides a mechanism to project, or resolve anonymous to well-known identities.
+ * @param projectParty Provides a mechanism to project, or resolve anonymous to well-known identities.
  * @throws FlowException if a required counter-party session is missing for a state participant.
  */
 @Suspendable
 fun FlowLogic<*>.checkSufficientSessions(
-    sessions: Iterable<FlowSession>, vararg states: ContractState,
-    partyProjection: (AbstractParty) -> AbstractParty = { it }
-) = checkSufficientSessions(sessions, states.toSet(), partyProjection)
+    sessions: Iterable<FlowSession>,
+    vararg states: ContractState,
+    projectParty: (AbstractParty) -> AbstractParty = { it }
+) = checkSufficientSessions(sessions, states.toSet(), projectParty)
 
 /**
  * Checks that sufficient flow sessions have been provided for the specified transaction.
  *
  * @param sessions The flow sessions that have been provided to the flow.
  * @param transaction The transaction for which to check that sufficient flow sessions exist.
- * @param partyProjection Provides a mechanism to project, or resolve anonymous to well-known identities.
+ * @param projectParty Provides a mechanism to project, or resolve anonymous to well-known identities.
  * @throws FlowException if a required counter-party session is missing for a state participant.
  */
 @Suspendable
 fun FlowLogic<*>.checkSufficientSessions(
     sessions: Iterable<FlowSession>,
     transaction: TransactionBuilder,
-    partyProjection: (AbstractParty) -> AbstractParty = { it }
+    projectParty: (AbstractParty) -> AbstractParty = { it }
 ) {
     val ledgerTransaction = transaction.toLedgerTransaction(serviceHub)
-    checkSufficientSessions(sessions, ledgerTransaction.inputStates + ledgerTransaction.outputStates, partyProjection)
+    checkSufficientSessions(sessions, ledgerTransaction.inputStates + ledgerTransaction.outputStates, projectParty)
 }

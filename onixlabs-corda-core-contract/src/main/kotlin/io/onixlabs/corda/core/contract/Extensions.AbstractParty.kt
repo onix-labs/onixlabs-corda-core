@@ -21,6 +21,20 @@ import net.corda.core.identity.AbstractParty
 import java.security.PublicKey
 
 /**
+ * Guarantees strict equality between the current [AbstractParty] and the other [AbstractParty].
+ *
+ * @param other The other [AbstractParty] to compare with the current [AbstractParty].
+ * @return Returns true if the current [AbstractParty] and the other [AbstractParty] are strictly equal; otherwise, false.
+ */
+fun AbstractParty.strictEquals(other: AbstractParty): Boolean {
+    val equalByReference = this === other
+    val equalByThisOther = equals(other)
+    val equalByOtherThis = other == this
+
+    return equalByReference || (equalByThisOther && equalByOtherThis)
+}
+
+/**
  * Gets the owning keys from an [Iterable] of [AbstractParty].
  *
  * @return Returns a [Set] of owning keys.

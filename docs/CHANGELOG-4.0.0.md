@@ -24,3 +24,81 @@ fun AbstractParty.strictEquals(other: AbstractParty): Boolean
 
 ---
 
+### checkSufficientSessionsForCounterparties _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+Checks that sufficient flow sessions have been provided for the specified counter-parties.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessionsForCounterparties(
+    sessions: Iterable<FlowSession>,
+    counterparties: Iterable<AbstractParty>,
+    projectParty: (AbstractParty) -> AbstractParty = { it }
+): Unit
+```
+
+---
+
+### checkSufficientSessionsForContractStates _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+Checks that sufficient flow sessions have been provided for the specified states.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessionsForContractStates(
+    sessions: Iterable<FlowSession>,
+    states: Iterable<ContractState>,
+    partyProjection: (AbstractParty) -> AbstractParty = { it }
+): Unit
+```
+
+---
+
+### checkSufficientSessionsForContractStates _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+Checks that sufficient flow sessions have been provided for the specified states.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessionsForContractStates(
+    sessions: Iterable<FlowSession>,
+    vararg states: ContractState,
+    projectParty: (AbstractParty) -> AbstractParty = { it }
+): Unit
+```
+
+---
+
+### checkSufficientSessionsForTransactionBuilder _Extension Function_
+
+**Module:** onixlabs-corda-core-workflow
+
+**Package:** io.onixlabs.corda.core.workflow
+
+Checks that sufficient flow sessions have been provided for the specified transaction.
+
+```kotlin
+@Suspendable
+fun FlowLogic<*>.checkSufficientSessionsForTransactionBuilder(
+    sessions: Iterable<FlowSession>,
+    transaction: TransactionBuilder,
+    partyProjection: (AbstractParty) -> AbstractParty = { it }
+    projectParty: (AbstractParty) -> AbstractParty = { it }
+): Unit
+```
+
+---
+
+### 

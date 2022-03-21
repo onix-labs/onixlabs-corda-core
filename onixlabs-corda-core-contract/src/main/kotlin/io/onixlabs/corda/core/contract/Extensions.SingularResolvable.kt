@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 ONIXLabs
+ * Copyright 2020-2022 ONIXLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,12 +52,12 @@ fun <T : ContractState> SingularResolvable<T>.resolveOrThrow(
  * Resolves a [ContractState] using a [LedgerTransaction] instance.
  *
  * @param transaction The [LedgerTransaction] instance to use to resolve the state.
- * @param resolution The transaction resolution method to use to resolve the [ContractState] instance.
+ * @param position The position of the [ContractState] instance to resolve in the transaction.
  * @param message The exception message to throw if the state cannot be resolved.
  * @return Returns the resolved [ContractState], or throws an exception if the state cannot be resolved.
  */
 fun <T : ContractState> SingularResolvable<T>.resolveOrThrow(
     transaction: LedgerTransaction,
-    resolution: TransactionResolution,
+    position: StatePosition,
     message: () -> String = { MESSAGE }
-): StateAndRef<T> = resolve(transaction, resolution) ?: throw IllegalArgumentException(message())
+): StateAndRef<T> = resolve(transaction, position) ?: throw IllegalArgumentException(message())

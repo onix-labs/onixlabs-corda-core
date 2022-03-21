@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 ONIXLabs
+ * Copyright 2020-2022 ONIXLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,20 @@ package io.onixlabs.corda.core.contract
 import net.corda.core.crypto.SecureHash
 import net.corda.core.identity.AbstractParty
 import java.security.PublicKey
+
+/**
+ * Guarantees strict equality between the current [AbstractParty] and the other [AbstractParty].
+ *
+ * @param other The other [AbstractParty] to compare with the current [AbstractParty].
+ * @return Returns true if the current [AbstractParty] and the other [AbstractParty] are strictly equal; otherwise, false.
+ */
+fun AbstractParty.strictEquals(other: AbstractParty): Boolean {
+    val equalByReference = this === other
+    val equalByThisOther = equals(other)
+    val equalByOtherThis = other == this
+
+    return equalByReference || (equalByThisOther && equalByOtherThis)
+}
 
 /**
  * Gets the owning keys from an [Iterable] of [AbstractParty].

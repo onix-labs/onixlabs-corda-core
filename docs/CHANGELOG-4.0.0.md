@@ -24,6 +24,32 @@ fun AbstractParty.strictEquals(other: AbstractParty): Boolean
 
 ---
 
+### StatePosition _Enum Class_
+
+**Module:** onixlabs-corda-core-contract
+
+**Package:** io.onixlabs.corda.core.contract
+
+Determines the position of a state within a transaction.
+
+```kotlin
+enum class StatePosition
+```
+
+#### Entries
+
+| Name          | Description                                                  |
+| ------------- | ------------------------------------------------------------ |
+| **INPUT**     | Defines that a resolvable should resolve from a transaction input state. |
+| **OUTPUT**    | Defines that a resolvable should resolve from a transaction output state. |
+| **REFERENCE** | Defines that a resolvable should resolve from a transaction reference input state. |
+
+#### Remarks
+
+This class replaces `TransactionResolution` which has been part of the API since version 1.0.0, and includes new functionality to resolve input, output and reference states from a `LedgerTransaction` instance.
+
+---
+
 ### checkSufficientSessionsForCounterparties _Extension Function_
 
 **Module:** onixlabs-corda-core-workflow
@@ -101,4 +127,3 @@ fun FlowLogic<*>.checkSufficientSessionsForTransactionBuilder(
 
 ---
 
-### 

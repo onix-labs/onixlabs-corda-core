@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 ONIXLabs
+ * Copyright 2020-2022 ONIXLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,10 @@ interface SingularResolvable<T> where T : ContractState {
      * Resolves a [ContractState] using a [LedgerTransaction] instance.
      *
      * @param transaction The [LedgerTransaction] instance to use to resolve the state.
-     * @param resolution The transaction resolution method to use to resolve the [ContractState] instance.
+     * @param position The position of the [ContractState]  instance to resolve in the transaction.
      * @return Returns the resolved [ContractState], or null if no matching state is found.
      */
-    fun resolve(transaction: LedgerTransaction, resolution: TransactionResolution): StateAndRef<T>?
+    fun resolve(transaction: LedgerTransaction, position: StatePosition): StateAndRef<T>?
 
     /**
      * Determines whether this [SingularResolvable] is pointing to the specified [StateAndRef] instance.

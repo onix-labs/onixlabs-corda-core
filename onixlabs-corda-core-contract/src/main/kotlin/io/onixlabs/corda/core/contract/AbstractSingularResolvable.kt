@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 ONIXLabs
+ * Copyright 2020-2022 ONIXLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,16 +61,10 @@ abstract class AbstractSingularResolvable<T> : SingularResolvable<T> where T : C
      * Resolves a [ContractState] using a [LedgerTransaction] instance.
      *
      * @param transaction The [LedgerTransaction] instance to use to resolve the state.
-     * @param resolution The transaction resolution method to use to resolve the [ContractState] instance.
+     * @param position The position of the [ContractState] instance to resolve in the transaction.
      * @return Returns the resolved [ContractState], or null if no matching state is found.
      */
-    override fun resolve(transaction: LedgerTransaction, resolution: TransactionResolution): StateAndRef<T>? {
-        val states = when (resolution) {
-            TransactionResolution.INPUT -> transaction.inRefsOfType(contractStateType)
-            TransactionResolution.OUTPUT -> transaction.outRefsOfType(contractStateType)
-            TransactionResolution.REFERENCE -> transaction.referenceInputRefsOfType(contractStateType)
-        }
-
-        return states.singleOrNull { isPointingTo(it) }
+    override fun resolve(transaction: LedgerTransaction, position: StatePosition): StateAndRef<T>? {
+        return position.getStateAndRefs(transaction, contractStateType).singleOrNull { isPointingTo(it) }
     }
 }

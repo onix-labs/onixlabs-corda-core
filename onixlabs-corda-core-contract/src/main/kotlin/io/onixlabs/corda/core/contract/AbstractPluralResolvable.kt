@@ -61,16 +61,10 @@ abstract class AbstractPluralResolvable<T> : PluralResolvable<T> where T : Contr
      * Resolves a [ContractState] using a [LedgerTransaction] instance.
      *
      * @param transaction The [LedgerTransaction] instance to use to resolve the state.
-     * @param resolution The transaction resolution method to use to resolve the [ContractState] instance.
+     * @param position The position of the [ContractState]  instances to resolve in the transaction.
      * @return Returns a list of resolved [ContractState] elements, or an empty list if no matching state is found.
      */
-    override fun resolve(transaction: LedgerTransaction, resolution: TransactionResolution): List<StateAndRef<T>> {
-        val states = when (resolution) {
-            TransactionResolution.INPUT -> transaction.inRefsOfType(contractStateType)
-            TransactionResolution.OUTPUT -> transaction.outRefsOfType(contractStateType)
-            TransactionResolution.REFERENCE -> transaction.referenceInputRefsOfType(contractStateType)
-        }
-
-        return states.filter { isPointingTo(it) }
+    override fun resolve(transaction: LedgerTransaction, position: StatePosition): List<StateAndRef<T>> {
+        return position.getStateAndRefs(transaction, contractStateType).filter { isPointingTo(it) }
     }
 }

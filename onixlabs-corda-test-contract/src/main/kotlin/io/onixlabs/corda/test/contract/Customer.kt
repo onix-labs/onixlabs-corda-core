@@ -72,7 +72,7 @@ data class Customer(
         override val criteria: QueryCriteria = vaultQuery<Reward> {
             expression(RewardEntity::owner equalTo customer.owner)
             expression(RewardEntity::customerLinearId equalTo customer.linearId.id)
-            expression(RewardEntity::customerExternalId equalTo  customer.linearId.externalId)
+            expression(RewardEntity::customerExternalId equalTo customer.linearId.externalId)
         }
 
         override fun isPointingTo(stateAndRef: StateAndRef<Reward>): Boolean = with(stateAndRef.state) {

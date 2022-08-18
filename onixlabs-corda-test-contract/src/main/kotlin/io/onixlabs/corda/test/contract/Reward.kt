@@ -59,6 +59,7 @@ data class Reward(
 
     private class CustomerResolver(private val reward: Reward) : AbstractSingularResolvable<Customer>() {
 
+        @Transient
         override val criteria: QueryCriteria = vaultQuery<Customer> {
             relevancyStatus(Vault.RelevancyStatus.ALL)
             linearIds(reward.customerLinearId)

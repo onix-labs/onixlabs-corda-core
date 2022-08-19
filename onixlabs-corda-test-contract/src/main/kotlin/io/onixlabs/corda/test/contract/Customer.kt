@@ -69,8 +69,7 @@ data class Customer(
 
     private class RewardResolver(private val customer: Customer) : AbstractPluralResolvable<Reward>() {
 
-        @Transient
-        override val criteria: QueryCriteria = vaultQuery<Reward> {
+        override val criteria: QueryCriteria get() = vaultQuery<Reward> {
             expression(RewardEntity::owner equalTo customer.owner)
             expression(RewardEntity::customerLinearId equalTo customer.linearId.id)
             expression(RewardEntity::customerExternalId equalTo customer.linearId.externalId)
